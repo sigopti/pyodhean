@@ -8,9 +8,10 @@ from .utils import pluck
 
 class Model:
 
-    def __init__(self, technologies=None):
+    def __init__(self, technologies=None, production=None):
         self.model = pe.ConcreteModel()
         self.def_technologies(technologies or {})
+        self.def_production(production or {})
         self.def_sets()
         self.def_parameters()
         self.def_variables()
@@ -42,27 +43,37 @@ class Model:
             initialize=technologies.keys(),
             doc='indice technologie de production')
         self.model.C_Hprod_unit = pe.Param(
-            self.model.k,initialize=pluck(technologies, 'C_Hprod_unit'),
+            self.model.k, initialize=pluck(technologies, 'C_Hprod_unit'),
             doc='coût unitaire  de la chaudiere installée (€/kW)')
         self.model.C_heat_unit = pe.Param(
-            self.model.k,initialize=pluck(technologies, 'C_heat_unit'),
+            self.model.k, initialize=pluck(technologies, 'C_heat_unit'),
             doc="coût unitaire de la chaleur suivant l'énergie de la technologie employee et la periode selon inflation (€/kWh)")
         self.model.Eff = pe.Param(
-            self.model.k,initialize=pluck(technologies, 'Eff'),
+            self.model.k, initialize=pluck(technologies, 'Eff'),
             doc='rendement de la technologie k (%)')
         self.model.rate_i = pe.Param(
-            self.model.k,initialize=pluck(technologies, 'rate_i'),
+            self.model.k, initialize=pluck(technologies, 'rate_i'),
             doc="inflation de l'énergie liée à la technologie k (%)")
         self.model.T_prod_out_max = pe.Param(
-            self.model.k,initialize=pluck(technologies, 'T_prod_out_max'),
+            self.model.k, initialize=pluck(technologies, 'T_prod_out_max'),
             doc='température max autorisée en sortie de chaudiere de la techno k (°C)')
         self.model.T_prod_in_min = pe.Param(
-            self.model.k,initialize=pluck(technologies, 'T_prod_in_min'),
+            self.model.k, initialize=pluck(technologies, 'T_prod_in_min'),
             doc='température min autorisée en entree de chaudiere de la techno k (°C)')
+
+    def def_production(self, production):
+        self.model.i = pe.Set(
+            initialize=production.keys(),
+            doc='indice des noeuds producteurs')
+        self.model.x_P = pe.Param(
+            self.model.i, initialize=pluck(production, 'x'),
+            doc="abscisse d'un noeud producteur (m)")
+        self.model.z_P = pe.Param(
+            self.model.i, initialize=pluck(production, 'y'),
+            doc="ordonnée d'un noeud producteur (m)")
 
     def def_sets(self):
 
-        self.model.i = pe.Set(initialize=['P1'], doc='indice des noeuds producteurs')
         self.model.j = pe.Set(initialize=['C1', 'C2'], doc='indice des noeuds consommateurs')
         self.model.o = pe.Set(initialize=['C1', 'C2'], doc='indice des noeuds consommateurs')
 
@@ -71,8 +82,6 @@ class Model:
         self.model.C_tr_unit = pe.Param(initialize=800, doc='coût unitaire de tranchee aller-retour (€/ml)')
         self.model.period = pe.Param(initialize=5808, doc='durée de fonctionnement annuelle du RCU (h)')
         self.model.annee = pe.Param(initialize=15, doc='duree d\'amortissement (année)')
-        self.model.x_P = pe.Param(self.model.i, initialize={'P1':0}, doc='abscisse d\'un noeud producteur (m)')
-        self.model.z_P = pe.Param(self.model.i, initialize={'P1':0}, doc='ordonnée d\'un noeud producteur (m)')
         self.model.rate_i_pump = pe.Param(initialize=0.04, doc='inflation du coût de l\'électricite pour le pompage (%)')
         self.model.x_C = pe.Param(self.model.j, initialize={'C1':60,'C2':0}, doc='abscisse d\'un noeud consommateur (m)')
         self.model.z_C = pe.Param(self.model.j, initialize={'C1':40,'C2':40}, doc='ordonnée d\'un noeud consommateur (m)')

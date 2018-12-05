@@ -26,11 +26,18 @@ technologies = {
         'rate_i': 0.04,
         'T_prod_out_max': 100,
         'T_prod_in_min': 30,
-    }
+    },
+}
+
+production = {
+    'P1': {'x': 0, 'y': 0},
 }
 
 
-model = Model(technologies=technologies)
+model = Model(
+    technologies=technologies,
+    production=production,
+)
 
 print('### Solve ###\n')
 model.solve(options)
