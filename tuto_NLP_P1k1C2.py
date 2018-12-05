@@ -18,6 +18,17 @@ options = {
     # diverging_iterates_tol':,           # defaut = 1e+20
 }
 
+general_parameters = {
+    # coût unitaire de tranchee aller-retour (€/ml)
+    'C_tr_unit': 800,
+    # durée de fonctionnement annuelle du RCU (h)
+    'period': 5808,
+    # duree d'amortissement (année)
+    'depreciation_period': 15,
+    # inflation du coût de l'électricite pour le pompage (%)
+    'rate_i_pump': 0.04,
+}
+
 technologies = {
     'k1': {
         'C_Hprod_unit': 800,
@@ -49,6 +60,7 @@ consumption = {
 }
 
 model = Model(
+    general_parameters=general_parameters,
     technologies=technologies,
     production=production,
     consumption=consumption,

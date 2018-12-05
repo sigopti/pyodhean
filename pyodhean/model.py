@@ -8,8 +8,11 @@ from .utils import pluck
 
 class Model:
 
-    def __init__(self, technologies=None, production=None, consumption=None):
+    def __init__(
+            self, general_parameters,
+            technologies=None, production=None, consumption=None):
         self.model = pe.ConcreteModel()
+        self.gp = general_parameters
         self.def_technologies(technologies or {})
         self.def_production(production or {})
         self.def_consumption(consumption or {})
@@ -96,11 +99,6 @@ class Model:
             doc='température retour reseau secondaire du consommateur (°C)')
 
     def def_parameters(self):
-
-        self.model.C_tr_unit = pe.Param(initialize=800, doc='coût unitaire de tranchee aller-retour (€/ml)')
-        self.model.period = pe.Param(initialize=5808, doc='durée de fonctionnement annuelle du RCU (h)')
-        self.model.annee = pe.Param(initialize=15, doc='duree d\'amortissement (année)')
-        self.model.rate_i_pump = pe.Param(initialize=0.04, doc='inflation du coût de l\'électricite pour le pompage (%)')
 
         # Quelle technologie associée à chaque production ?
         table_Y_P = {
@@ -224,18 +222,18 @@ class Model:
             """facteur multiplicateur des coûts operationnels permettant de tenir compte de la somme
              des dépenses annuelles actualisé et suivant l\'inflation de l\'energie et ce par technologie
              de production (électricité/gaz/biomasse/UIOM...)"""
-            return (1-(1+model.rate_a)**model.annee*(1+model.rate_i[k])**model.annee)/(1-(1+model.rate_a)*(1+model.rate_i[k]))
+            return (1-(1+model.rate_a)**self.gp['depreciation_period']*(1+model.rate_i[k])**self.gp['depreciation_period'])/(1-(1+model.rate_a)*(1+model.rate_i[k]))
         self.model.f_opex = pe.Param(self.model.k,initialize=calcul_f_opex)
 
         def calcul_f_opex_pump(model):
             """idem pour la pompe, alimentée en électricité"""
-            return (1-(1+model.rate_a)**model.annee*(1+model.rate_i_pump)**model.annee)/(1-(1+model.rate_a)*(1+model.rate_i_pump))
+            return (1-(1+model.rate_a)**self.gp['depreciation_period']*(1+self.gp['rate_i_pump'])**self.gp['depreciation_period'])/(1-(1+model.rate_a)*(1+self.gp['rate_i_pump']))
         self.model.f_opex_pump = pe.Param(initialize=calcul_f_opex_pump)
 
         def calcul_f_capex(model):
             """facteur multiplicateur pour le calcul du coût d'investissement permettant de tenir compte
             du taux d'actualisation (mais pas d'inflation contraitement aux coûts opex)"""
-            return (1+model.rate_a)**model.annee
+            return (1+model.rate_a)**self.gp['depreciation_period']
         self.model.f_capex = pe.Param(initialize=calcul_f_capex)
 
         def calcul_M_max(model):
@@ -746,12 +744,13 @@ class Model:
         # Termes de la fonction coût
         def cout_pompage_rule(model):
             """Coût de pompage"""
-            return model.C_pump == 1.e-6*model.f_opex_pump*model.C_pump_unit*model.period*sum(model.P_pump[i]*model.M_prod_tot[i] for i in model.i)*model.Eff_pump/model.rho
+            return model.C_pump == 1.e-6 * model.f_opex_pump * model.C_pump_unit * self.gp['period'] * sum(
+                model.P_pump[i] * model.M_prod_tot[i] for i in model.i) * model.Eff_pump / model.rho
         self.model.cout_pompage = pe.Constraint(rule=cout_pompage_rule)
 
         def cout_heat_rule(model):
             """Coût de la chaleur livrée"""
-            return model.C_heat == 1.e-6 * model.period * sum(model.f_opex[k] * model.C_heat_unit[k] * model.H_inst[i,k] for i in model.i for k in model.k)
+            return model.C_heat == 1.e-6 * self.gp['period'] * sum(model.f_opex[k] * model.C_heat_unit[k] * model.H_inst[i,k] for i in model.i for k in model.k)
         self.model.cout_heat = pe.Constraint(rule=cout_heat_rule)
 
         def cout_puissance_rule(model):
@@ -776,11 +775,11 @@ class Model:
 
         def cout_canalisation_tranchee_rule(model):
             """Coût de tranchée"""
-            return model.C_tr == 1.e-6* model.f_capex*(
-            sum(model.C_tr_unit/2 * model.L_PC[i,j] for i in model.i for j in model.j)
-            + sum(model.C_tr_unit/2 * model.L_CP[j,i] for j in model.j for i in model.i)
-            + sum(model.C_tr_unit/2 * model.L_CC_parallel[j,o] for j in model.j for o in model.o)
-            + sum(model.C_tr_unit/2 * model.L_CC_return[j,o] for j in model.j for o in model.o)
+            return model.C_tr == 1.e-6 * model.f_capex * self.gp['C_tr_unit'] / 2 * (
+                sum(model.L_PC[i, j] for i in model.i for j in model.j) +
+                sum(model.L_CP[j, i] for j in model.j for i in model.i) +
+                sum(model.L_CC_parallel[j, o] for j in model.j for o in model.o) +
+                sum(model.L_CC_return[j, o] for j in model.j for o in model.o)
             )
         self.model.cout_canalisation_tranchee = pe.Constraint(rule=cout_canalisation_tranchee_rule)
 
