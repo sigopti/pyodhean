@@ -3,11 +3,14 @@ from math import pi
 import pyomo.environ as pe
 import pyomo.opt as po
 
+from .utils import pluck
+
 
 class Model:
 
-    def __init__(self):
+    def __init__(self, technologies=None):
         self.model = pe.ConcreteModel()
+        self.def_technologies(technologies or {})
         self.def_sets()
         self.def_parameters()
         self.def_variables()
@@ -34,12 +37,34 @@ class Model:
     def display(self):
         self.model.display()
 
+    def def_technologies(self, technologies):
+        self.model.k = pe.Set(
+            initialize=technologies.keys(),
+            doc='indice technologie de production')
+        self.model.C_Hprod_unit = pe.Param(
+            self.model.k,initialize=pluck(technologies, 'C_Hprod_unit'),
+            doc='coût unitaire  de la chaudiere installée (€/kW)')
+        self.model.C_heat_unit = pe.Param(
+            self.model.k,initialize=pluck(technologies, 'C_heat_unit'),
+            doc="coût unitaire de la chaleur suivant l'énergie de la technologie employee et la periode selon inflation (€/kWh)")
+        self.model.Eff = pe.Param(
+            self.model.k,initialize=pluck(technologies, 'Eff'),
+            doc='rendement de la technologie k (%)')
+        self.model.rate_i = pe.Param(
+            self.model.k,initialize=pluck(technologies, 'rate_i'),
+            doc="inflation de l'énergie liée à la technologie k (%)")
+        self.model.T_prod_out_max = pe.Param(
+            self.model.k,initialize=pluck(technologies, 'T_prod_out_max'),
+            doc='température max autorisée en sortie de chaudiere de la techno k (°C)')
+        self.model.T_prod_in_min = pe.Param(
+            self.model.k,initialize=pluck(technologies, 'T_prod_in_min'),
+            doc='température min autorisée en entree de chaudiere de la techno k (°C)')
+
     def def_sets(self):
 
         self.model.i = pe.Set(initialize=['P1'], doc='indice des noeuds producteurs')
         self.model.j = pe.Set(initialize=['C1', 'C2'], doc='indice des noeuds consommateurs')
         self.model.o = pe.Set(initialize=['C1', 'C2'], doc='indice des noeuds consommateurs')
-        self.model.k = pe.Set(initialize=['k1'], doc='indice technologie de production')
 
     def def_parameters(self):
 
@@ -48,10 +73,6 @@ class Model:
         self.model.annee = pe.Param(initialize=15, doc='duree d\'amortissement (année)')
         self.model.x_P = pe.Param(self.model.i, initialize={'P1':0}, doc='abscisse d\'un noeud producteur (m)')
         self.model.z_P = pe.Param(self.model.i, initialize={'P1':0}, doc='ordonnée d\'un noeud producteur (m)')
-        self.model.C_Hprod_unit = pe.Param(self.model.k,initialize={'k1':800}, doc='coût unitaire  de la chaudiere installée (€/kW)')
-        self.model.C_heat_unit = pe.Param(self.model.k,initialize={'k1':0.08}, doc='coût unitaire de la chaleur suivant l\'énergie de la technologie employee et la periode selon inflation (€/kWh)')
-        self.model.Eff = pe.Param(self.model.k,initialize={'k1':0.9}, doc='rendement de la technologie k (%)')
-        self.model.rate_i = pe.Param(self.model.k,initialize={'k1':0.04}, doc='inflation de l\'énergie liée à la technologie k (%)')
         self.model.rate_i_pump = pe.Param(initialize=0.04, doc='inflation du coût de l\'électricite pour le pompage (%)')
         self.model.x_C = pe.Param(self.model.j, initialize={'C1':60,'C2':0}, doc='abscisse d\'un noeud consommateur (m)')
         self.model.z_C = pe.Param(self.model.j, initialize={'C1':40,'C2':40}, doc='ordonnée d\'un noeud consommateur (m)')
@@ -134,8 +155,6 @@ class Model:
         self.model.V_max = pe.Param(initialize=3, doc='borne vitesse max, 3m/s d\'après Techniques de l\'Ingénieur (m/s)')
         self.model.P_min = pe.Param(initialize=120, doc='pression minimale en borne inférieure (kPa)')
         self.model.P_max = pe.Param(initialize=500, doc='pression max en borne supérieure (kPa)')
-        self.model.T_prod_out_max = pe.Param(self.model.k,initialize={'k1':100}, doc='température max autorisée en sortie de chaudiere de la techno k (°C)')
-        self.model.T_prod_in_min = pe.Param(self.model.k,initialize={'k1':30}, doc='température min autorisée en entree de chaudiere de la techno k (°C)')
         self.model.Dint_max = pe.Param(initialize=0.25, doc='diamètre interieur max du tuyau (m)')
         self.model.Dint_min = pe.Param(initialize=0.01, doc='diamètre interieur max du tuyau (m)')
         self.model.Dist_max_autorisee = pe.Param(initialize=1000, doc='distance max pour borner les longueurs de canalisations (m)')

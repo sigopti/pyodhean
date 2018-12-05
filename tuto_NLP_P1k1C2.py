@@ -18,8 +18,19 @@ options = {
     # diverging_iterates_tol':,           # defaut = 1e+20
 }
 
+technologies = {
+    'k1': {
+        'C_Hprod_unit': 800,
+        'C_heat_unit': 0.08,
+        'Eff': 0.9,
+        'rate_i': 0.04,
+        'T_prod_out_max': 100,
+        'T_prod_in_min': 30,
+    }
+}
 
-model = Model()
+
+model = Model(technologies=technologies)
 
 print('### Solve ###\n')
 model.solve(options)
