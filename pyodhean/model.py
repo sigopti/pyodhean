@@ -8,11 +8,11 @@ from .utils import pluck
 
 class Model:
 
-    def __init__(self, technologies=None, production=None):
+    def __init__(self, technologies=None, production=None, consumption=None):
         self.model = pe.ConcreteModel()
         self.def_technologies(technologies or {})
         self.def_production(production or {})
-        self.def_sets()
+        self.def_consumption(consumption or {})
         self.def_parameters()
         self.def_variables()
         self.def_constraints()
@@ -72,10 +72,28 @@ class Model:
             self.model.i, initialize=pluck(production, 'y'),
             doc="ordonnée d'un noeud producteur (m)")
 
-    def def_sets(self):
-
-        self.model.j = pe.Set(initialize=['C1', 'C2'], doc='indice des noeuds consommateurs')
-        self.model.o = pe.Set(initialize=['C1', 'C2'], doc='indice des noeuds consommateurs')
+    def def_consumption(self, consumption):
+        self.model.j = pe.Set(
+            initialize=consumption.keys(),
+            doc='indice des noeuds consommateurs')
+        self.model.o = pe.Set(
+            initialize=consumption.keys(),
+            doc='indice des noeuds consommateurs')
+        self.model.x_C = pe.Param(
+            self.model.j, initialize=pluck(consumption, 'x'),
+            doc="abscisse d'un noeud consommateur (m)")
+        self.model.z_C = pe.Param(
+            self.model.j, initialize=pluck(consumption, 'y'),
+            doc="ordonnée d'un noeud consommateur (m)")
+        self.model.H_req = pe.Param(
+            self.model.j, initialize=pluck(consumption, 'H_req'),
+            doc='besoin de chaleur (kW)')
+        self.model.T_req_out = pe.Param(
+            self.model.j, initialize=pluck(consumption, 'T_req_out'),
+            doc='température entree reseau secondaire du consommateur (°C)')
+        self.model.T_req_in = pe.Param(
+            self.model.j, initialize=pluck(consumption, 'T_req_in'),
+            doc='température retour reseau secondaire du consommateur (°C)')
 
     def def_parameters(self):
 
@@ -83,11 +101,6 @@ class Model:
         self.model.period = pe.Param(initialize=5808, doc='durée de fonctionnement annuelle du RCU (h)')
         self.model.annee = pe.Param(initialize=15, doc='duree d\'amortissement (année)')
         self.model.rate_i_pump = pe.Param(initialize=0.04, doc='inflation du coût de l\'électricite pour le pompage (%)')
-        self.model.x_C = pe.Param(self.model.j, initialize={'C1':60,'C2':0}, doc='abscisse d\'un noeud consommateur (m)')
-        self.model.z_C = pe.Param(self.model.j, initialize={'C1':40,'C2':40}, doc='ordonnée d\'un noeud consommateur (m)')
-        self.model.H_req = pe.Param(self.model.j, initialize={'C1':80,'C2':80}, doc='besoin de chaleur (kW)')
-        self.model.T_req_out = pe.Param(self.model.j, initialize={'C1':60,'C2':60}, doc='température entree reseau secondaire du consommateur (°C)')
-        self.model.T_req_in = pe.Param(self.model.j, initialize={'C1':80,'C2':80}, doc='température retour reseau secondaire du consommateur (°C)')
 
         # Quelle technologie associée à chaque production ?
         table_Y_P = {
