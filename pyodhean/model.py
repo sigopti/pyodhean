@@ -432,84 +432,270 @@ class Model:
 
     def def_variables(self):
 
-        ## vitesses
-        self.model.V_linePC = pe.Var(self.model.i, self.model.j,initialize=(self.model.V_min+self.model.V_max)/2,bounds=(0,self.model.V_max), doc='vitesses conduites producteurs-consommateurs = ALLER')
-        self.model.V_lineCP = pe.Var(self.model.j, self.model.i,initialize=(self.model.V_min+self.model.V_max)/2,bounds=(0,self.model.V_max), doc='vitesses conduites consommateurs-producteurs = RETOUR')
-        self.model.V_lineCC_parallel = pe.Var(self.model.j, self.model.o,initialize=(self.model.V_min+self.model.V_max)/2,bounds=(0,self.model.V_max), doc='vitesses conduites consommateurs-consommateurs ALLER')
-        self.model.V_lineCC_return = pe.Var(self.model.o, self.model.j,initialize=(self.model.V_min+self.model.V_max)/2,bounds=(0,self.model.V_max), doc='vitesses conduites consommateurs-consommateurs RETOUR')
+        # Vitesses
+        self.model.V_linePC = pe.Var(
+            self.model.i, self.model.j,
+            initialize=(self.model.V_min + self.model.V_max) / 2, bounds=(0, self.model.V_max),
+            doc='vitesses conduites producteurs-consommateurs = ALLER')
+        self.model.V_lineCP = pe.Var(
+            self.model.j, self.model.i,
+            initialize=(self.model.V_min + self.model.V_max) / 2, bounds=(0, self.model.V_max),
+            doc='vitesses conduites consommateurs-producteurs = RETOUR')
+        self.model.V_lineCC_parallel = pe.Var(
+            self.model.j, self.model.o,
+            initialize=(self.model.V_min + self.model.V_max) / 2, bounds=(0, self.model.V_max),
+            doc='vitesses conduites consommateurs-consommateurs ALLER')
+        self.model.V_lineCC_return = pe.Var(
+            self.model.o, self.model.j,
+            initialize=(self.model.V_min + self.model.V_max) / 2, bounds=(0, self.model.V_max),
+            doc='vitesses conduites consommateurs-consommateurs RETOUR')
 
-        ## Diamètres
-        self.model.Dint_PC = pe.Var(self.model.i, self.model.j,initialize=(self.model.Dint_min+self.model.Dint_max)/2,bounds=(self.model.Dint_min,self.model.Dint_max), doc='diamètres intérieurs conduites producteurs-consommateurs = ALLER')
-        self.model.Dint_CP = pe.Var(self.model.j, self.model.i,initialize=(self.model.Dint_min+self.model.Dint_max)/2,bounds=(self.model.Dint_min,self.model.Dint_max), doc='diamètres intérieurs conduites consommateurs-producteurs = RETOUR')
-        self.model.Dint_CC_parallel = pe.Var(self.model.j, self.model.o,initialize=(self.model.Dint_min+self.model.Dint_max)/2,bounds=(self.model.Dint_min,self.model.Dint_max), doc='diamètres intérieurs conduites consommateurs-consommateurs ALLER')
-        self.model.Dint_CC_return = pe.Var(self.model.o, self.model.j,initialize=(self.model.Dint_min+self.model.Dint_max)/2,bounds=(self.model.Dint_min,self.model.Dint_max), doc='diamètres intérieurs conduites consommateurs-consommateurs RETOUR')
-        self.model.Dout_PC = pe.Var(self.model.i, self.model.j,initialize=(self.model.Dint_min+self.model.Dint_max)/2,bounds=(self.model.Dint_min,self.model.Dint_max), doc='diamètres extérieurs conduites producteurs-consommateurs = ALLER')
-        self.model.Dout_CP = pe.Var(self.model.j, self.model.i,initialize=(self.model.Dint_min+self.model.Dint_max)/2,bounds=(self.model.Dint_min,self.model.Dint_max), doc='diamètres extérieurs conduites consommateurs-producteurs = RETOUR')
-        self.model.Dout_CC_parallel = pe.Var(self.model.j, self.model.o,initialize=(self.model.Dint_min+self.model.Dint_max)/2,bounds=(self.model.Dint_min,self.model.Dint_max), doc='diamètres extérieurs conduites consommateurs-consommateurs ALLER')
-        self.model.Dout_CC_return = pe.Var(self.model.o, self.model.j,initialize=(self.model.Dint_min+self.model.Dint_max)/2,bounds=(self.model.Dint_min,self.model.Dint_max), doc='diamètres extérieurs conduites consommateurs-consommateurs RETOUR')
+        # Diamètres
+        self.model.Dint_PC = pe.Var(
+            self.model.i, self.model.j,
+            initialize=(self.model.Dint_min + self.model.Dint_max) / 2,
+            bounds=(self.model.Dint_min, self.model.Dint_max),
+            doc='diamètres intérieurs conduites producteurs-consommateurs = ALLER')
+        self.model.Dint_CP = pe.Var(
+            self.model.j, self.model.i,
+            initialize=(self.model.Dint_min + self.model.Dint_max) / 2,
+            bounds=(self.model.Dint_min, self.model.Dint_max),
+            doc='diamètres intérieurs conduites consommateurs-producteurs = RETOUR')
+        self.model.Dint_CC_parallel = pe.Var(
+            self.model.j, self.model.o,
+            initialize=(self.model.Dint_min + self.model.Dint_max) / 2,
+            bounds=(self.model.Dint_min, self.model.Dint_max),
+            doc='diamètres intérieurs conduites consommateurs-consommateurs ALLER')
+        self.model.Dint_CC_return = pe.Var(
+            self.model.o, self.model.j,
+            initialize=(self.model.Dint_min + self.model.Dint_max) / 2,
+            bounds=(self.model.Dint_min, self.model.Dint_max),
+            doc='diamètres intérieurs conduites consommateurs-consommateurs RETOUR')
+        self.model.Dout_PC = pe.Var(
+            self.model.i, self.model.j,
+            initialize=(self.model.Dint_min + self.model.Dint_max) / 2,
+            bounds=(self.model.Dint_min, self.model.Dint_max),
+            doc='diamètres extérieurs conduites producteurs-consommateurs = ALLER')
+        self.model.Dout_CP = pe.Var(
+            self.model.j, self.model.i,
+            initialize=(self.model.Dint_min + self.model.Dint_max) / 2,
+            bounds=(self.model.Dint_min, self.model.Dint_max),
+            doc='diamètres extérieurs conduites consommateurs-producteurs = RETOUR')
+        self.model.Dout_CC_parallel = pe.Var(
+            self.model.j, self.model.o,
+            initialize=(self.model.Dint_min + self.model.Dint_max) / 2,
+            bounds=(self.model.Dint_min, self.model.Dint_max),
+            doc='diamètres extérieurs conduites consommateurs-consommateurs ALLER')
+        self.model.Dout_CC_return = pe.Var(
+            self.model.o, self.model.j,
+            initialize=(self.model.Dint_min + self.model.Dint_max) / 2,
+            bounds=(self.model.Dint_min, self.model.Dint_max),
+            doc='diamètres extérieurs conduites consommateurs-consommateurs RETOUR')
 
-        ## Débits
-        self.model.M_linePC = pe.Var(self.model.i,self.model.j,initialize=self.model.M_min,bounds=(self.model.M_min,self.model.M_max), doc='debit entre un noeud P(i) et C(j) (kg/s)')
-        self.model.M_lineCP = pe.Var(self.model.j,self.model.i,initialize=self.model.M_min,bounds=(self.model.M_min,self.model.M_max), doc='debit entre un noeud C(j) et P(i) (kg/s)')
-        self.model.M_prod = pe.Var(self.model.i,self.model.k,initialize=self.model.M_min,bounds=(self.model.M_min,self.model.M_max), doc='debit de la techno k(k) dans P(i) (kg/s)')
-        self.model.M_prod_tot = pe.Var(self.model.i,initialize=self.model.M_min,bounds=(self.model.M_min,self.model.M_max), doc='debit dans P(i) = somme des débits des technos k(k) (kg/s)')
-        self.model.M_hx = pe.Var(self.model.j,initialize=self.model.M_min,bounds=(self.model.M_min,self.model.M_max), doc='debit dans l\'échangeur de C(j) côté primaire (kg/s)')
-        self.model.M_supply = pe.Var(self.model.j,initialize=self.model.M_min,bounds=(self.model.M_min,self.model.M_max), doc='debit avant l\'échangeur de C(j); différent de M_hx seulement si cascade autorisée (kg/s)')
-        self.model.M_lineCC_parallel = pe.Var(self.model.j,self.model.o,initialize=self.model.M_min,bounds=(self.model.M_min,self.model.M_max), doc='debit entre un noeud C(j) et C(o) - ALLER (kg/s)')
-        self.model.M_lineCC_return = pe.Var(self.model.o,self.model.j,initialize=self.model.M_min,bounds=(self.model.M_min,self.model.M_max), doc='debit entre un noeud C(o) et C(j) - RETOUR (kg/s)')
-        self.model.M_return = pe.Var(self.model.j,initialize=self.model.M_min,bounds=(self.model.M_min,self.model.M_max), doc='debit après l\'échangeur au noeud C(j); différent de M_hx seulement si cascade (kg/s)')
+        # Débits
+        self.model.M_linePC = pe.Var(
+            self.model.i, self.model.j,
+            initialize=self.model.M_min,
+            bounds=(self.model.M_min, self.model.M_max),
+            doc='debit entre un noeud P(i) et C(j) (kg/s)')
+        self.model.M_lineCP = pe.Var(
+            self.model.j, self.model.i,
+            initialize=self.model.M_min,
+            bounds=(self.model.M_min, self.model.M_max),
+            doc='debit entre un noeud C(j) et P(i) (kg/s)')
+        self.model.M_prod = pe.Var(
+            self.model.i, self.model.k,
+            initialize=self.model.M_min,
+            bounds=(self.model.M_min, self.model.M_max),
+            doc='debit de la techno k(k) dans P(i) (kg/s)')
+        self.model.M_prod_tot = pe.Var(
+            self.model.i,
+            initialize=self.model.M_min,
+            bounds=(self.model.M_min, self.model.M_max),
+            doc='debit dans P(i) = somme des débits des technos k(k) (kg/s)')
+        self.model.M_hx = pe.Var(
+            self.model.j,
+            initialize=self.model.M_min,
+            bounds=(self.model.M_min, self.model.M_max),
+            doc="debit dans l'échangeur de C(j) côté primaire (kg/s)")
+        self.model.M_supply = pe.Var(
+            self.model.j,
+            initialize=self.model.M_min,
+            bounds=(self.model.M_min, self.model.M_max),
+            doc="debit avant l'échangeur de C(j); différent de M_hx seulement si cascade autorisée (kg/s)")
+        self.model.M_lineCC_parallel = pe.Var(
+            self.model.j, self.model.o,
+            initialize=self.model.M_min,
+            bounds=(self.model.M_min, self.model.M_max),
+            doc='debit entre un noeud C(j) et C(o) - ALLER (kg/s)')
+        self.model.M_lineCC_return = pe.Var(
+            self.model.o, self.model.j,
+            initialize=self.model.M_min,
+            bounds=(self.model.M_min, self.model.M_max),
+            doc='debit entre un noeud C(o) et C(j) - RETOUR (kg/s)')
+        self.model.M_return = pe.Var(
+            self.model.j,
+            initialize=self.model.M_min,
+            bounds=(self.model.M_min, self.model.M_max),
+            doc="debit après l\'changeur au noeud C(j); différent de M_hx seulement si cascade (kg/s)")
 
-        ## Températures
-        self.model.T_prod_in = pe.Var(self.model.i,self.model.k,initialize=self.model.T_init_min,bounds=(self.model.T_init_min,self.model.T_init_max), doc='température de sortie de la technologie k à la production i (°C)')
-        self.model.T_prod_tot_in = pe.Var(self.model.i,initialize=self.model.T_init_min,bounds=(self.model.T_init_min,self.model.T_init_max), doc='température de sortie de la production i = mélange des k technologies (°C)')
-        self.model.T_prod_out = pe.Var(self.model.i,self.model.k,initialize=self.model.T_init_min,bounds=(self.model.T_init_min,self.model.T_init_max), doc='température de retour de la technologie k à la production i = température de retour à la production i (°C)')
-        self.model.T_prod_tot_out = pe.Var(self.model.i,initialize=self.model.T_init_min,bounds=(self.model.T_init_min,self.model.T_init_max), doc='température de retour à la production i (°C)')
-        self.model.T_linePC_in = pe.Var(self.model.i, self.model.j,initialize=self.model.T_init_min,bounds=(self.model.T_init_min,self.model.T_init_max), doc='température de départ de la production i (°C)')
-        self.model.T_linePC_out = pe.Var(self.model.i, self.model.j,initialize=self.model.T_init_min,bounds=(self.model.T_init_min,self.model.T_init_max), doc='température d\'entrée dans le premier noeud = température de départ de la production i - pertes (°C)')
-        self.model.T_lineCP_in = pe.Var(self.model.j, self.model.i,initialize=self.model.T_init_min,bounds=(self.model.T_init_min,self.model.T_init_max), doc='température de départ du dernier noeud (°C)')
-        self.model.T_lineCP_out = pe.Var(self.model.j, self.model.i,initialize=self.model.T_init_min,bounds=(self.model.T_init_min,self.model.T_init_max), doc='température de retour à la production i = température de départ du dernier noeud - pertes (°C)')
-        self.model.T_hx_in = pe.Var(self.model.j,initialize=self.model.T_init_min,bounds=(self.model.T_init_min,self.model.T_init_max), doc='température d\'entrée dans l\'échangeur (°C)')
-        self.model.T_hx_out = pe.Var(self.model.j,initialize=self.model.T_init_min,bounds=(self.model.T_init_min,self.model.T_init_max), doc='température de sortie de l\'échangeur (°C)')
-        self.model.T_supply = pe.Var(self.model.j,initialize=self.model.T_init_min,bounds=(self.model.T_init_min,self.model.T_init_max), doc='température avant l\'échangeur de C(j) = T_hx_in (°C)')
-        self.model.T_lineCC_parallel_in = pe.Var(self.model.j, self.model.o,initialize=self.model.T_init_min,bounds=(self.model.T_init_min,self.model.T_init_max), doc='température de départ au noeud C(j) - ALLER (°C)')
-        self.model.T_lineCC_parallel_out = pe.Var(self.model.j, self.model.o,initialize=self.model.T_init_min,bounds=(self.model.T_init_min,self.model.T_init_max), doc='température d\'arrivée au noeud C(o) - ALLER (°C)')
-        self.model.T_lineCC_return_in = pe.Var(self.model.o, self.model.j,initialize=self.model.T_init_min,bounds=(self.model.T_init_min,self.model.T_init_max), doc='température de départ au noeud C(o) - RETOUR (°C)')
-        self.model.T_lineCC_return_out = pe.Var(self.model.o, self.model.j,initialize=self.model.T_init_min,bounds=(self.model.T_init_min,self.model.T_init_max), doc='température d\'arrivée au noeud C(j) - RETOUR (°C)')
-        self.model.T_return = pe.Var(self.model.j,initialize=self.model.T_init_min,bounds=(self.model.T_init_min,self.model.T_init_max), doc='température après l\'échangeur de C(j) = T_hx_out (°C)')
+        # Températures
+        self.model.T_prod_in = pe.Var(
+            self.model.i, self.model.k,
+            initialize=self.model.T_init_min,
+            bounds=(self.model.T_init_min, self.model.T_init_max),
+            doc='température de sortie de la technologie k à la production i (°C)')
+        self.model.T_prod_tot_in = pe.Var(
+            self.model.i,
+            initialize=self.model.T_init_min,
+            bounds=(self.model.T_init_min, self.model.T_init_max),
+            doc='température de sortie de la production i = mélange des k technologies (°C)')
+        self.model.T_prod_out = pe.Var(
+            self.model.i, self.model.k,
+            initialize=self.model.T_init_min,
+            bounds=(self.model.T_init_min, self.model.T_init_max),
+            doc='température de retour de la technologie k à la production i = température de retour à la production i (°C)')
+        self.model.T_prod_tot_out = pe.Var(
+            self.model.i,
+            initialize=self.model.T_init_min,
+            bounds=(self.model.T_init_min, self.model.T_init_max),
+            doc='température de retour à la production i (°C)')
+        self.model.T_linePC_in = pe.Var(
+            self.model.i, self.model.j,
+            initialize=self.model.T_init_min,
+            bounds=(self.model.T_init_min, self.model.T_init_max),
+            doc='température de départ de la production i (°C)')
+        self.model.T_linePC_out = pe.Var(
+            self.model.i, self.model.j,
+            initialize=self.model.T_init_min,
+            bounds=(self.model.T_init_min, self.model.T_init_max),
+            doc="température d'entrée dans le premier noeud = température de départ de la production i - pertes (°C)")
+        self.model.T_lineCP_in = pe.Var(
+            self.model.j, self.model.i,
+            initialize=self.model.T_init_min,
+            bounds=(self.model.T_init_min, self.model.T_init_max),
+            doc='température de départ du dernier noeud (°C)')
+        self.model.T_lineCP_out = pe.Var(
+            self.model.j, self.model.i,
+            initialize=self.model.T_init_min,
+            bounds=(self.model.T_init_min, self.model.T_init_max),
+            doc='température de retour à la production i = température de départ du dernier noeud - pertes (°C)')
+        self.model.T_hx_in = pe.Var(
+            self.model.j,
+            initialize=self.model.T_init_min,
+            bounds=(self.model.T_init_min, self.model.T_init_max),
+            doc="température d'entrée dans l'échangeur (°C)")
+        self.model.T_hx_out = pe.Var(
+            self.model.j,
+            initialize=self.model.T_init_min,
+            bounds=(self.model.T_init_min, self.model.T_init_max),
+            doc="température de sortie de l'échangeur (°C)")
+        self.model.T_supply = pe.Var(
+            self.model.j,
+            initialize=self.model.T_init_min,
+            bounds=(self.model.T_init_min, self.model.T_init_max),
+            doc="température avant l'échangeur de C(j) = T_hx_in (°C)")
+        self.model.T_lineCC_parallel_in = pe.Var(
+            self.model.j, self.model.o,
+            initialize=self.model.T_init_min,
+            bounds=(self.model.T_init_min, self.model.T_init_max),
+            doc='température de départ au noeud C(j) - ALLER (°C)')
+        self.model.T_lineCC_parallel_out = pe.Var(
+            self.model.j, self.model.o,
+            initialize=self.model.T_init_min,
+            bounds=(self.model.T_init_min, self.model.T_init_max),
+            doc="température d'arrivée au noeud C(o) - ALLER (°C)")
+        self.model.T_lineCC_return_in = pe.Var(
+            self.model.o, self.model.j,
+            initialize=self.model.T_init_min,
+            bounds=(self.model.T_init_min, self.model.T_init_max),
+            doc='température de départ au noeud C(o) - RETOUR (°C)')
+        self.model.T_lineCC_return_out = pe.Var(
+            self.model.o, self.model.j,
+            initialize=self.model.T_init_min,
+            bounds=(self.model.T_init_min, self.model.T_init_max),
+            doc="température d'arrivée au noeud C(j) - RETOUR (°C)")
+        self.model.T_return = pe.Var(
+            self.model.j,
+            initialize=self.model.T_init_min,
+            bounds=(self.model.T_init_min, self.model.T_init_max),
+            doc="température après l'échangeur de C(j) = T_hx_out (°C)")
 
-        ## Echangeur
-        self.model.DTLM = pe.Var(self.model.j,initialize=max(self.model.T_prod_out_max[k] for k in self.model.k), bounds=(0,max(self.model.T_prod_out_max[k] for k in self.model.k)), doc='Différence logarithmique de température à l’échangeur de chaleur (°C)')
-        self.model.DT1 = pe.Var(self.model.j,initialize=self.model.T_hx_pinch, bounds=(self.model.T_hx_pinch,self.model.T_init_max), doc='Différence de température côté chaud = T_hx_in - T_req_out (°C)')
-        self.model.DT2 = pe.Var(self.model.j,initialize=self.model.T_hx_pinch, bounds=(self.model.T_hx_pinch,self.model.T_init_max), doc='Différence de température côté froid = T_hx_out - T_req_in (°C)')
+        # Echangeur
+        self.model.DTLM = pe.Var(
+            self.model.j,
+            initialize=max(self.model.T_prod_out_max[k] for k in self.model.k),
+            bounds=(0, max(self.model.T_prod_out_max[k] for k in self.model.k)),
+            doc='Différence logarithmique de température à l’échangeur de chaleur (°C)')
+        self.model.DT1 = pe.Var(
+            self.model.j,
+            initialize=self.model.T_hx_pinch,
+            bounds=(self.model.T_hx_pinch, self.model.T_init_max),
+            doc='Différence de température côté chaud = T_hx_in - T_req_out (°C)')
+        self.model.DT2 = pe.Var(
+            self.model.j,
+            initialize=self.model.T_hx_pinch,
+            bounds=(self.model.T_hx_pinch, self.model.T_init_max),
+            doc='Différence de température côté froid = T_hx_out - T_req_in (°C)')
 
-        def A_hx_borne(model,j):
-            return (model.H_req[j]/(model.K_hx*max(model.T_prod_out_max[k] for k in model.k)), 10*model.H_req[j]/(model.K_hx*max(model.T_prod_out_max[k] for k in model.k)))
-        def A_hx_init(model,j):
-            return  model.H_req[j]/(model.K_hx*max(model.T_prod_out_max[k] for k in model.k))
-        self.model.A_hx = pe.Var(self.model.j,initialize=A_hx_init,bounds=A_hx_borne, doc='surface de l\'échangeur pour chaque consommateur j, bornée par le pincement T_hx_pinch ==> cf calcul de A_hx_borne')
+        def A_hx_borne(model, j):
+            return (
+                model.H_req[j] / (model.K_hx * max(model.T_prod_out_max[k] for k in model.k)),
+                10 * model.H_req[j] / (model.K_hx * max(model.T_prod_out_max[k] for k in model.k))
+            )
 
-        ## Pressions pour le coût_pompage
-        self.model.P_pump = pe.Var(self.model.i,initialize=0,bounds=(0,self.model.P_max), doc='Pressions de pompage (Pa)')
+        def A_hx_init(model, j):
+            return model.H_req[j] / (model.K_hx * max(model.T_prod_out_max[k] for k in model.k))
+        self.model.A_hx = pe.Var(
+            self.model.j, initialize=A_hx_init, bounds=A_hx_borne,
+            doc="surface de l'échangeur pour chaque consommateur j, bornée par le pincement T_hx_pinch ==> cf calcul de A_hx_borne")
 
-        ## Puissances installées
-        self.model.H_inst = pe.Var(self.model.i,self.model.k,initialize=0,bounds=(0,self.model.H_inst_max), doc='Puissance installée à la production i pour la technologie k (kW)')
-        # self.model.H_hx = pe.Var(self.model.j,bounds=(0,80,), doc='Puissance nominale de l\'échangeur du consommateur j')
+        # Pressions pour le coût_pompage
+        self.model.P_pump = pe.Var(
+            self.model.i, initialize=0, bounds=(0, self.model.P_max),
+            doc='Pressions de pompage (Pa)')
 
-        def H_hx_borne(model,j):
-            return (0,model.H_req[j])
-        self.model.H_hx = pe.Var(self.model.j,initialize=0,bounds=H_hx_borne, doc='Puissance nominale de l\'échangeur du consommateur j')
+        # Puissances installées
+        self.model.H_inst = pe.Var(
+            self.model.i, self.model.k, initialize=0, bounds=(0, self.model.H_inst_max),
+            doc='Puissance installée à la production i pour la technologie k (kW)')
+#         self.model.H_hx = pe.Var(
+#             self.model.j, bounds=(0, 80,),
+#             doc='Puissance nominale de l\'échangeur du consommateur j')
 
-        ## Coûts
-        self.model.C_pump = pe.Var(initialize=0,bounds=(0,None), doc='Coûts de pompage (€)')
-        self.model.C_heat = pe.Var(initialize=0,bounds=(0,None), doc='Coût de la chaleur à produire (€)')
-        self.model.C_Hinst = pe.Var(initialize=0,bounds=(0,None), doc='Coût d\'installation de la puissance à la production (€)')
-        self.model.C_hx = pe.Var(initialize=0,bounds=(0,None), doc='Coût d\'installation des échangeurs en sous-station (€)')
-        self.model.C_line_tot = pe.Var(initialize=0,bounds=(0,None), doc='Coût total de la canalisation = tranchée + tuyau pré-isolé (€) ')
-        self.model.C_pipe = pe.Var(initialize=0,bounds=(0,None), doc='Coût des tuyau pré-isolés (€)')
-        self.model.C_tr = pe.Var(initialize=0,bounds=(0,None), doc='Coût de tranchée (€)')
+        def H_hx_borne(model, j):
+            return (0, model.H_req[j])
+        self.model.H_hx = pe.Var(
+            self.model.j, initialize=0, bounds=H_hx_borne,
+            doc="Puissance nominale de l'échangeur du consommateur j")
 
-        ## Longueur du réseau
-        self.model.L_tot = pe.Var(initialize=0,bounds=(0,None), doc='Longueur totale du réseau = longueur de tuyaux posés = 2 fois la longueur de tranchée car tuyau aller-retour')
+        # Coûts
+        self.model.C_pump = pe.Var(
+            initialize=0, bounds=(0, None),
+            doc='Coûts de pompage (€)')
+        self.model.C_heat = pe.Var(
+            initialize=0, bounds=(0, None),
+            doc='Coût de la chaleur à produire (€)')
+        self.model.C_Hinst = pe.Var(
+            initialize=0, bounds=(0, None),
+            doc='Coût d\'installation de la puissance à la production (€)')
+        self.model.C_hx = pe.Var(
+            initialize=0, bounds=(0, None),
+            doc='Coût d\'installation des échangeurs en sous-station (€)')
+        self.model.C_line_tot = pe.Var(
+            initialize=0, bounds=(0, None),
+            doc='Coût total de la canalisation = tranchée + tuyau pré-isolé (€) ')
+        self.model.C_pipe = pe.Var(
+            initialize=0, bounds=(0, None),
+            doc='Coût des tuyau pré-isolés (€)')
+        self.model.C_tr = pe.Var(
+            initialize=0, bounds=(0, None),
+            doc='Coût de tranchée (€)')
+
+        # Longueur du réseau
+        self.model.L_tot = pe.Var(
+            initialize=0, bounds=(0, None),
+            doc='Longueur totale du réseau = longueur de tuyaux posés = 2 fois la longueur de tranchée car tuyau aller-retour')
 
     def def_constraints(self):
 
