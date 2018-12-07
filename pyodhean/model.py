@@ -206,117 +206,123 @@ class Model:
         # Quelle technologie associée à chaque production ?
         table_Y_P = {
             ('P1', 'k1'): 1,
-            }
-
-        self.model.Y_P = pe.Param(self.model.i, self.model.k, initialize=table_Y_P, doc='Existence techno k au lieu de production Pi')
-
+        }
+        self.model.Y_P = pe.Param(
+            self.model.i, self.model.k, initialize=table_Y_P,
+            doc='Existence techno k au lieu de production Pi')
 
         # Initialisation des canalisations entre producteurs et consommateurs
         table_Y_linePC = {
             ('P1', 'C1'): 1,
             ('P1', 'C2'): 0,
-            }
-
-        self.model.Y_linePC = pe.Param(self.model.i, self.model.j, initialize=table_Y_linePC, doc='Existence canalisation PC')
-
+        }
+        self.model.Y_linePC = pe.Param(
+            self.model.i, self.model.j, initialize=table_Y_linePC,
+            doc='Existence canalisation PC')
 
         # Initialisation des canalisations entre consommateurs et producteurs
         table_Y_lineCP = {
             ('C1', 'P1'): 1,
             ('C2', 'P1'): 0,
-            }
-        self.model.Y_lineCP = pe.Param(self.model.j, self.model.i, initialize=table_Y_lineCP, doc='Existence canalisation CP')
-
+        }
+        self.model.Y_lineCP = pe.Param(
+            self.model.j, self.model.i, initialize=table_Y_lineCP,
+            doc='Existence canalisation CP')
 
         # Initialisation des canalisations entre consommateurs
-        ## Aller
+        # Aller
         table_Y_lineCC_parallel = {
             ('C1', 'C1'): 0,
             ('C1', 'C2'): 1,
             ('C2', 'C1'): 0,
             ('C2', 'C2'): 0,
-            }
-        self.model.Y_lineCC_parallel = pe.Param(self.model.j, self.model.o, initialize=table_Y_lineCC_parallel, doc='Existence canalisation CC parallel')
+        }
+        self.model.Y_lineCC_parallel = pe.Param(
+            self.model.j, self.model.o, initialize=table_Y_lineCC_parallel,
+            doc='Existence canalisation CC parallel')
 
-        ## Retour
+        # Retour
         table_Y_lineCC_return = {
             ('C1', 'C1'): 0,
             ('C1', 'C2'): 0,
             ('C2', 'C1'): 1,
             ('C2', 'C2'): 0,
-            }
-        self.model.Y_lineCC_return = pe.Param(self.model.o, self.model.j, initialize=table_Y_lineCC_return, doc='Existence canalisation CC return')
+        }
+        self.model.Y_lineCC_return = pe.Param(
+            self.model.o, self.model.j, initialize=table_Y_lineCC_return,
+            doc='Existence canalisation CC return')
 
-
-
-        ## Valeur calculée
+        # Valeur calculée
         def calcul_H_inst_max(model):
-            """somme des puissances installées de toutes les sous-stations, correspond à la puissance maximale théorique appelée (cas exeptionnel)
-            et donc sert de borne max pour la puissance à installer au niveau de la production"""
-            return 1.5*sum(model.H_req[j] for j in model.j)
+            """Somme des puissances installées de toutes les sous-stations
+            Correspond à la puissance maximale théorique appelée (cas exeptionnel)
+            et donc sert de borne max pour la puissance à installer au niveau de la production
+            """
+            return 1.5 * sum(model.H_req[j] for j in model.j)
         self.model.H_inst_max = pe.Param(initialize=calcul_H_inst_max)
 
         def calcul_H_inst_bigM(model):
             """BigM associé à la puissance maximale à installer à chaque production
             (valeur commune à toutes les productions potentielles)"""
-            return 1000*sum(model.H_req[j] for j in model.j)
+            return 1000 * sum(model.H_req[j] for j in model.j)
         self.model.H_inst_bigM = pe.Param(initialize=calcul_H_inst_bigM)
 
         def calcul_gamma(model):
             """coefficient gamma pour le calcul des pertes de charges du réseau (à combattre par la pompe)
             pour en déduire la puissance de pompage et son coût"""
-            return 100/70*((100/model.mu)**(-0.25))/(2*(model.rho**(0.75)))
+            return 100 / 70 * ((100 / model.mu)**(-0.25)) / (2 * (model.rho**0.75))
         self.model.gamma = pe.Param(initialize=calcul_gamma)
 
-        def calcul_DistPC(model,i,j):
+        def calcul_DistPC(model, i, j):
             """calcul des distances Euclidiennes (à vol d'oiseau) entre chaque producteurs et consommateurs,
             revient à écrire une matrice de dimension i x j contenant les distances,
-            toutes les distances existent, que les producteurs-consommateurs soient reliés ou non après optimisation"""
-            return ((model.x_C[j]-model.x_P[i])**2 + (model.z_C[j]-model.z_P[i])**2 )**(0.5)
+            toutes les distances existent,
+            que les producteurs-consommateurs soient reliés ou non après optimisation"""
+            return ((model.x_C[j] - model.x_P[i])**2 + (model.z_C[j] - model.z_P[i])**2)**0.5
         self.model.Dist_PC = pe.Param(self.model.i,self.model.j,initialize=calcul_DistPC)
 
-        def calcul_DistCC(model,j,o):
+        def calcul_DistCC(model, j, o):
             """calcul des distances Euclidiennes (à vol d'oiseau) entre consommateurs,
             revient à écrire une matrice de dimension j x o contenant les distances donc les termes de la
             diagonale valent 0: on ne calcule pas une distance d'un consommateurs à lui même,
             toutes les distances existent, que les producteurs-consommateurs soient reliés ou non après optimisation"""
             if j != o:
-                return ((model.x_C[j]-model.x_C[o])**2 + (model.z_C[j]-model.z_C[o])**2 )**(0.5)
+                return ((model.x_C[j] - model.x_C[o])**2 + (model.z_C[j] - model.z_C[o])**2)**0.5
             else:
                 return 0
-        self.model.Dist_CC = pe.Param(self.model.j,self.model.o,initialize=calcul_DistCC)
+        self.model.Dist_CC = pe.Param(self.model.j, self.model.o, initialize=calcul_DistCC)
 
         self.model.Dist_bigM = pe.Param(initialize=self.model.Dist_max_autorisee)
 
-        def calcul_f_opex(model,k):
+        def calcul_f_opex(model, k):
             """facteur multiplicateur des coûts operationnels permettant de tenir compte de la somme
-             des dépenses annuelles actualisé et suivant l\'inflation de l\'energie et ce par technologie
+             des dépenses annuelles actualisé et suivant l'inflation de l'energie et ce par technologie
              de production (électricité/gaz/biomasse/UIOM...)"""
-            return (1-(1+model.rate_a)**model.depreciation_period*(1+model.rate_i[k])**model.depreciation_period)/(1-(1+model.rate_a)*(1+model.rate_i[k]))
-        self.model.f_opex = pe.Param(self.model.k,initialize=calcul_f_opex)
+            return (1 - (1 + model.rate_a)**model.depreciation_period * (1 + model.rate_i[k])**model.depreciation_period) / (1 - (1 + model.rate_a) * (1 + model.rate_i[k]))
+        self.model.f_opex = pe.Param(self.model.k, initialize=calcul_f_opex)
 
         def calcul_f_opex_pump(model):
             """idem pour la pompe, alimentée en électricité"""
-            return (1-(1+model.rate_a)**model.depreciation_period*(1+model.rate_i_pump)**model.depreciation_period)/(1-(1+model.rate_a)*(1+model.rate_i_pump))
+            return (1 - (1 + model.rate_a)**model.depreciation_period * (1 + model.rate_i_pump)**model.depreciation_period) / (1 - (1 + model.rate_a) * (1 + model.rate_i_pump))
         self.model.f_opex_pump = pe.Param(initialize=calcul_f_opex_pump)
 
         def calcul_f_capex(model):
             """facteur multiplicateur pour le calcul du coût d'investissement permettant de tenir compte
             du taux d'actualisation (mais pas d'inflation contraitement aux coûts opex)"""
-            return (1+model.rate_a)**model.depreciation_period
+            return (1 + model.rate_a)**model.depreciation_period
         self.model.f_capex = pe.Param(initialize=calcul_f_capex)
 
         def calcul_M_max(model):
             """débit maximal dans la canalisation, lié à V_max et Dint_max,
             s'applique à l'ensemble du réseau (productions, échangeurs en sous-station et conduites)"""
-            return model.V_max*model.rho*pi*(model.Dint_max**2)/4
+            return model.V_max * model.rho * pi * (model.Dint_max**2) / 4
         self.model.M_max = pe.Param(initialize=calcul_M_max)
 
         self.model.M_min = pe.Param(initialize=0, doc='débit minimal dans la canalisation')
 
         def calcul_M_bigM(model):
             """BigM associé au débit maximal pour l'optimisation des débits"""
-            return 1000*model.M_max
+            return 1000 * model.M_max
         self.model.M_bigM = pe.Param(initialize=calcul_M_bigM)
 
         def calcul_T_bigM(model):
@@ -327,90 +333,102 @@ class Model:
 
         def calcul_Dout_max(model):
             """calcul du diamètre maximum de canalisation"""
-            return model.Dint_max+model.tk_insul+model.tk_pipe
+            return model.Dint_max + model.tk_insul + model.tk_pipe
         self.model.Dout_max = pe.Param(initialize=calcul_Dout_max)
 
         def calcul_Dout_min(model):
             """calcul du diamètre minimum de canalisation"""
-            return model.Dint_min+model.tk_insul+model.tk_pipe
+            return model.Dint_min + model.tk_insul + model.tk_pipe
         self.model.Dout_min = pe.Param(initialize=calcul_Dout_min)
 
         def calcul_R_insul_max(model):
             """calcul de la résistance maximale de l'épaisseur d'isolant"""
-            return model.Dint_max/(2*model.lambda_insul)*pe.log(model.Dout_max/model.Dint_max)
+            return model.Dint_max / (2 * model.lambda_insul) * pe.log(model.Dout_max / model.Dint_max)
         self.model.R_insul_max = pe.Param(initialize=calcul_R_insul_max)
 
         def calcul_R_insul_min(model):
             """calcul de la résistance minimale de l'épaisseur d'isolant"""
-            return model.Dint_min/(2*model.lambda_insul)*pe.log(model.Dout_min/model.Dint_min)
+            return model.Dint_min / (2 * model.lambda_insul) * pe.log(model.Dout_min / model.Dint_min)
         self.model.R_insul_min = pe.Param(initialize=calcul_R_insul_min)
 
         def calcul_R_soil_max(model):
             """calcul de la résistance maximale du sol au dessus des canalisations"""
-            return model.Dint_max/(2*model.lambda_soil)*pe.log(4*model.z_pipe/model.Dout_max)
+            return model.Dint_max / (2 * model.lambda_soil) * pe.log(4 * model.z_pipe / model.Dout_max)
         self.model.R_soil_max = pe.Param(initialize=calcul_R_soil_max)
 
         def calcul_R_soil_min(model):
             """calcul de la résistance minimale du sol au dessus des canalisations"""
-            return model.Dint_min/(2*model.lambda_soil)*pe.log(4*model.z_pipe/model.Dout_min)
+            return model.Dint_min / (2 * model.lambda_soil) * pe.log(4 * model.z_pipe / model.Dout_min)
         self.model.R_soil_min = pe.Param(initialize=calcul_R_soil_min)
 
         def calcul_R_tot_max(model):
             """calcul de la résistance totale maximale"""
-            return model.R_insul_max+model.R_soil_max
+            return model.R_insul_max + model.R_soil_max
         self.model.R_tot_max = pe.Param(initialize=calcul_R_tot_max)
 
         def calcul_R_tot_min(model):
             """calcul de la résistance totale minimale"""
-            return model.R_insul_min+model.R_soil_min
+            return model.R_insul_min + model.R_soil_min
         self.model.R_tot_min = pe.Param(initialize=calcul_R_tot_min)
 
         def calcul_T_init_min(model):
-            """température minimale qui sert de borne inférieure pour les températures de départ/entrée (production, consommateur,
-            échangeur, conduites, etc.). Il s'agit de la plus petite température parmis les températures minimales de retour des
+            """température minimale qui sert de borne inférieure pour les températures de départ/entrée
+            (production, consommateur, échangeur, conduites, etc.).
+            Il s'agit de la plus petite température parmis les températures minimales de retour des
             technologies de production et minimales de sortie des consommateurs"""
-            return min( min(model.T_prod_in_min[k] for k in model.k) , min(model.T_req_in[j] for j in model.j) )
+            return min(
+                min(model.T_prod_in_min[k] for k in model.k),
+                min(model.T_req_in[j] for j in model.j)
+            )
         self.model.T_init_min = pe.Param(initialize=calcul_T_init_min)
 
         def calcul_T_init_max(model):
-            """température maximale qui sert de borne supérieure pour les températures de retour/sortie (production, consommateur,
-            échangeur, conduites, etc.). Il s'agit de la plus grande température parmis les températures maximales de départ des
+            """température maximale qui sert de borne supérieure pour les températures de retour/sortie
+            (production, consommateur, échangeur, conduites, etc.).
+            Il s'agit de la plus grande température parmis les températures maximales de départ des
             technologies de production et maximales d'entrée des consommateurs"""
-            return max( max(model.T_prod_out_max[k] for k in model.k) , max(model.T_req_out[j] for j in model.j) )
+            return max(
+                max(model.T_prod_out_max[k] for k in model.k),
+                max(model.T_req_out[j] for j in model.j)
+            )
         self.model.T_init_max = pe.Param(initialize=calcul_T_init_max)
 
-        ## Distances
+        # Distances
         table_L_PC = {
             ('P1', 'C1'): 10,
             ('P1', 'C2'): 0,
-            }
-
-        self.model.L_PC = pe.Param(self.model.i, self.model.j, initialize=table_L_PC, doc='matrice des longueurs de canalisations')
+        }
+        self.model.L_PC = pe.Param(
+            self.model.i, self.model.j, initialize=table_L_PC,
+            doc='matrice des longueurs de canalisations')
 
         table_L_CP = {
             ('C1', 'P1'): 10,
             ('C2', 'P1'): 0,
-            }
-
-        self.model.L_CP = pe.Param(self.model.j, self.model.i, initialize=table_L_CP, doc='matrice des longueurs de canalisations')
+        }
+        self.model.L_CP = pe.Param(
+            self.model.j, self.model.i, initialize=table_L_CP,
+            doc='matrice des longueurs de canalisations')
 
         table_L_CC_parallel = {
             ('C1', 'C1'): 0,
             ('C1', 'C2'): 100,
             ('C2', 'C1'): 0,
             ('C2', 'C2'): 0,
-            }
-
-        self.model.L_CC_parallel = pe.Param(self.model.j, self.model.o, initialize=table_L_CC_parallel, doc='matrice des longueurs de canalisations')
+        }
+        self.model.L_CC_parallel = pe.Param(
+            self.model.j, self.model.o, initialize=table_L_CC_parallel,
+            doc='matrice des longueurs de canalisations')
 
         table_L_CC_return = {
             ('C1', 'C1'): 0,
             ('C1', 'C2'): 0,
             ('C2', 'C1'): 100,
             ('C2', 'C2'): 0,
-            }
-
-        self.model.L_CC_return = pe.Param(self.model.o, self.model.j, initialize=table_L_CC_return, doc='matrice des longueurs de canalisations')
+        }
+        self.model.L_CC_return = pe.Param(
+            self.model.o, self.model.j, initialize=table_L_CC_return,
+            doc='matrice des longueurs de canalisations')
 
     def def_variables(self):
 
