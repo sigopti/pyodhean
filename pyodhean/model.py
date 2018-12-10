@@ -1,3 +1,5 @@
+"""This file defines the PyODHEAN model class"""
+
 from math import pi
 
 import pyomo.environ as pe
@@ -7,14 +9,14 @@ from .utils import pluck
 
 
 class Model:
+    """PyODHEAN model class"""
 
     def __init__(
-            self, general_parameters,
-            technologies=None, production=None, consumption=None):
+            self, general_parameters, technologies, production, consumption):
         self.model = pe.ConcreteModel()
-        self.def_technologies(technologies or {})
-        self.def_production(production or {})
-        self.def_consumption(consumption or {})
+        self.def_technologies(technologies)
+        self.def_production(production)
+        self.def_consumption(consumption)
         self.def_parameters(general_parameters)
         self.def_variables()
         self.def_constraints()
