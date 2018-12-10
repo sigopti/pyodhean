@@ -17,10 +17,7 @@ class Model:
         self.def_technologies(technologies)
         self.def_production(production)
         self.def_consumption(consumption)
-        self.def_parameters(general_parameters)
-        self.def_variables()
-        self.def_constraints()
-        self.def_objective()
+        self.def_problem(general_parameters)
 
     def solve(self, options=None):
         opt = po.SolverFactory('ipopt')
@@ -99,7 +96,9 @@ class Model:
             self.model.j, initialize=pluck(consumption, 'T_req_in'),
             doc='température retour reseau secondaire du consommateur (°C)')
 
-    def def_parameters(self, general_parameters):
+    def def_problem(self, general_parameters):
+
+        # Parameters
 
         self.model.C_tr_unit = pe.Param(
             initialize=general_parameters['C_tr_unit'],
@@ -432,7 +431,7 @@ class Model:
             self.model.o, self.model.j, initialize=table_L_CC_return,
             doc='matrice des longueurs de canalisations')
 
-    def def_variables(self):
+        # Variables
 
         # Vitesses
         self.model.V_linePC = pe.Var(
@@ -699,7 +698,7 @@ class Model:
             initialize=0, bounds=(0, None),
             doc='Longueur totale du réseau = longueur de tuyaux posés = 2 fois la longueur de tranchée car tuyau aller-retour')
 
-    def def_constraints(self):
+        # Constraints
 
         # Définition des diametres exterieurs = diametre interieur + epaisseur du tuyau et epaisseur isolant
         def Def_Dout_PC_rule(model,i,j):
@@ -1074,7 +1073,7 @@ class Model:
                                 )
         self.model.Ex_L_tot = pe.Constraint(rule=Ex_L_tot_rule)
 
-    def def_objective(self):
+        # Objective
 
         def objective_rule(model):
             """Sommes des termes coût"""
