@@ -254,19 +254,15 @@ class Model:
             doc='Existence canalisation CC return')
 
         # Valeur calculée
-        def calcul_H_inst_max(model):
-            """Somme des puissances installées de toutes les sous-stations
-            Correspond à la puissance maximale théorique appelée (cas exeptionnel)
-            et donc sert de borne max pour la puissance à installer au niveau de la production
-            """
-            return 1.5 * sum(model.H_req[j] for j in model.j)
-        self.model.H_inst_max = pe.Param(initialize=calcul_H_inst_max)
 
-        def calcul_H_inst_bigM(model):
-            """BigM associé à la puissance maximale à installer à chaque production
-            (valeur commune à toutes les productions potentielles)"""
-            return 1000 * sum(model.H_req[j] for j in model.j)
-        self.model.H_inst_bigM = pe.Param(initialize=calcul_H_inst_bigM)
+        H_req_max = sum(self.model.H_req[j] for j in self.model.j)
+        # Somme des puissances installées de toutes les sous-stations
+        # Correspond à la puissance maximale théorique appelée (cas exeptionnel)
+        # et donc sert de borne max pour la puissance à installer au niveau de la production
+        self.model.H_inst_max = pe.Param(initialize=1.5 * H_req_max)
+        # BigM associé à la puissance maximale à installer à chaque production
+        # (valeur commune à toutes les productions potentielles)
+        self.model.H_inst_bigM = pe.Param(initialize=1000 * H_req_max)
 
         def calcul_gamma(model):
             """coefficient gamma pour le calcul des pertes de charges du réseau (à combattre par la pompe)
