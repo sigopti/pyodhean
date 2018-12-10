@@ -98,6 +98,9 @@ class Model:
 
     def def_problem(self, general_parameters):
 
+        T_prod_out_max = max(
+            self.model.T_prod_out_max[k] for k in self.model.k)
+
         # Parameters
 
         self.model.C_tr_unit = pe.Param(
@@ -322,11 +325,9 @@ class Model:
             return 1000 * model.M_max
         self.model.M_bigM = pe.Param(initialize=calcul_M_bigM)
 
-        def calcul_T_bigM(model):
-            """BigM associé à la température maximale pour l'optimisation des régimes de température
-            elle vaut 1000 fois la température de départ maximale des technologies disponibles"""
-            return max(model.T_prod_out_max[k] for k in model.k)
-        self.model.T_bigM = pe.Param(initialize=calcul_T_bigM)
+        # BigM associé à la température maximale pour l'optimisation des régimes de température
+        # elle vaut 1000 fois la température de départ maximale des technologies disponibles"""
+        self.model.T_bigM = pe.Param(initialize=T_prod_out_max)
 
         def calcul_Dout_max(model):
             """calcul du diamètre maximum de canalisation"""
@@ -379,16 +380,13 @@ class Model:
             )
         self.model.T_init_min = pe.Param(initialize=calcul_T_init_min)
 
-        def calcul_T_init_max(model):
-            """température maximale qui sert de borne supérieure pour les températures de retour/sortie
-            (production, consommateur, échangeur, conduites, etc.).
-            Il s'agit de la plus grande température parmis les températures maximales de départ des
-            technologies de production et maximales d'entrée des consommateurs"""
-            return max(
-                max(model.T_prod_out_max[k] for k in model.k),
-                max(model.T_req_out[j] for j in model.j)
-            )
-        self.model.T_init_max = pe.Param(initialize=calcul_T_init_max)
+        # Température maximale qui sert de borne supérieure pour les températures de retour/sortie
+        # (production, consommateur, échangeur, conduites, etc.).
+        # Il s'agit de la plus grande température parmis les températures maximales de départ des
+        # technologies de production et maximales d'entrée des consommateurs"""
+        T_init_max = max(
+            T_prod_out_max, max(self.model.T_req_out[j] for j in self.model.j))
+        self.model.T_init_max = pe.Param(initialize=T_init_max)
 
         # Distances
         table_L_PC = {
@@ -621,8 +619,8 @@ class Model:
         # Echangeur
         self.model.DTLM = pe.Var(
             self.model.j,
-            initialize=max(self.model.T_prod_out_max[k] for k in self.model.k),
-            bounds=(0, max(self.model.T_prod_out_max[k] for k in self.model.k)),
+            initialize=T_prod_out_max,
+            bounds=(0, T_prod_out_max),
             doc='Différence logarithmique de température à l’échangeur de chaleur (°C)')
         self.model.DT1 = pe.Var(
             self.model.j,
@@ -637,12 +635,12 @@ class Model:
 
         def A_hx_borne(model, j):
             return (
-                model.H_req[j] / (model.K_hx * max(model.T_prod_out_max[k] for k in model.k)),
-                10 * model.H_req[j] / (model.K_hx * max(model.T_prod_out_max[k] for k in model.k))
+                model.H_req[j] / (model.K_hx * T_prod_out_max),
+                10 * model.H_req[j] / (model.K_hx * T_prod_out_max)
             )
 
         def A_hx_init(model, j):
-            return model.H_req[j] / (model.K_hx * max(model.T_prod_out_max[k] for k in model.k))
+            return model.H_req[j] / (model.K_hx * T_prod_out_max)
         self.model.A_hx = pe.Var(
             self.model.j, initialize=A_hx_init, bounds=A_hx_borne,
             doc="surface de l'échangeur pour chaque consommateur j, bornée par le pincement T_hx_pinch ==> cf calcul de A_hx_borne")
