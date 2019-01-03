@@ -695,317 +695,461 @@ class Model:
         # Constraints
 
         # Définition des diametres exterieurs = diametre interieur + epaisseur du tuyau et epaisseur isolant
-        def Def_Dout_PC_rule(model,i,j):
+        def Def_Dout_PC_rule(model, i, j):
             """Diamètre des canalisations producteurs-consommateurs - ALLER"""
-            return model.Dout_PC[i,j] == model.Dint_PC[i,j]+model.tk_pipe+model.tk_insul
-        self.model.Def_Dout_PC = pe.Constraint(self.model.i,self.model.j,rule=Def_Dout_PC_rule)
+            return model.Dout_PC[i, j] == (
+                model.Dint_PC[i, j] + model.tk_pipe + model.tk_insul)
+        self.model.Def_Dout_PC = pe.Constraint(self.model.i, self.model.j, rule=Def_Dout_PC_rule)
 
-        def Def_Dout_CP_rule(model,j,i):
+        def Def_Dout_CP_rule(model, j, i):
             """Diamètre de la canalisation producteurs-consommateurs - RETOUR"""
-            return model.Dout_CP[j,i] == model.Dint_CP[j,i]+model.tk_pipe+model.tk_insul
-        self.model.Def_Dout_CP = pe.Constraint(self.model.j,self.model.i,rule=Def_Dout_CP_rule)
+            return model.Dout_CP[j, i] == (
+                model.Dint_CP[j, i] + model.tk_pipe + model.tk_insul)
+        self.model.Def_Dout_CP = pe.Constraint(self.model.j, self.model.i, rule=Def_Dout_CP_rule)
 
-        def Def_Dout_CC_parallel_rule(model,j,o):
+        def Def_Dout_CC_parallel_rule(model, j, o):
             """Diamètre des canalisations entre consommateurs - ALLER"""
-            return model.Dout_CC_parallel[j,o] == model.Dint_CC_parallel[j,o]+model.tk_pipe+model.tk_insul
-        self.model.Def_Dout_CC_parallel = pe.Constraint(self.model.j,self.model.o,rule=Def_Dout_CC_parallel_rule)
+            return model.Dout_CC_parallel[j, o] == (
+                model.Dint_CC_parallel[j, o] + model.tk_pipe + model.tk_insul)
+        self.model.Def_Dout_CC_parallel = pe.Constraint(
+            self.model.j, self.model.o, rule=Def_Dout_CC_parallel_rule)
 
-        def Def_Dout_CC_return_rule(model,o,j):
+        def Def_Dout_CC_return_rule(model, o, j):
             """Diamètre des canalisations entre consommateurs - RETOUR"""
-            return model.Dout_CC_return[o,j] == model.Dint_CC_return[o,j]+model.tk_pipe+model.tk_insul
-        self.model.Def_Dout_CC_return = pe.Constraint(self.model.o,self.model.j,rule=Def_Dout_CC_return_rule)
-
+            return model.Dout_CC_return[o, j] == (
+                model.Dint_CC_return[o, j] + model.tk_pipe + model.tk_insul)
+        self.model.Def_Dout_CC_return = pe.Constraint(
+            self.model.o, self.model.j, rule=Def_Dout_CC_return_rule)
 
         # Existance des contraintes selon la valeur des variables binaires avec la méthode du bigM
-        ## Débits
-        def Def_V_linePC_rule_bigM(model,i,j):
+        #  Débits
+        def Def_V_linePC_rule_bigM(model, i, j):
             """Inéquation du bigM sur le débit entre producteur et consommateur - ALLER"""
-            valeur = model.V_linePC[i,j]*(model.rho*pi*model.Dint_PC[i,j]*model.Dint_PC[i,j]/4) - model.M_linePC[i,j]
-            return - model.M_bigM*(1-model.Y_linePC[i,j]) <= valeur  <= model.M_bigM*(1-model.Y_linePC[i,j])
-        self.model.Def_V_linePC_bigM = pe.Constraint(self.model.i,self.model.j,rule=Def_V_linePC_rule_bigM)
+            valeur = (
+                model.V_linePC[i, j] * (
+                    model.rho * pi * model.Dint_PC[i, j] * model.Dint_PC[i, j] / 4) -
+                model.M_linePC[i, j]
+            )
+            return (
+                - model.M_bigM * (1 - model.Y_linePC[i, j]) <=
+                valeur <=
+                model.M_bigM * (1 - model.Y_linePC[i, j])
+            )
+        self.model.Def_V_linePC_bigM = pe.Constraint(
+            self.model.i, self.model.j, rule=Def_V_linePC_rule_bigM)
 
-        def Def_V_lineCP_rule_bigM(model,j,i):
+        def Def_V_lineCP_rule_bigM(model, j, i):
             """Inéquation du bigM sur le débit entre consommateur et producteur - RETOUR"""
-            valeur = model.V_lineCP[j,i]*(model.rho*pi*model.Dint_CP[j,i]*model.Dint_CP[j,i]/4) - model.M_lineCP[j,i]
-            return - model.M_bigM*(1-model.Y_lineCP[j,i]) <= valeur <= model.M_bigM*(1-model.Y_lineCP[j,i])
-        self.model.Def_V_lineCP_bigM = pe.Constraint(self.model.j,self.model.i,rule=Def_V_lineCP_rule_bigM)
+            valeur = (
+                model.V_lineCP[j, i] * (
+                    model.rho * pi * model.Dint_CP[j, i] * model.Dint_CP[j, i] / 4) -
+                model.M_lineCP[j, i]
+            )
+            return (
+                - model.M_bigM * (1 - model.Y_lineCP[j, i]) <=
+                valeur <=
+                model.M_bigM * (1 - model.Y_lineCP[j, i])
+            )
+        self.model.Def_V_lineCP_bigM = pe.Constraint(
+            self.model.j, self.model.i, rule=Def_V_lineCP_rule_bigM)
 
-        def Def_V_lineCC_parallel_rule_bigM(model,j,o):
+        def Def_V_lineCC_parallel_rule_bigM(model, j, o):
             """Inéquation du bigM sur le débit entre consommateurs - ALLER"""
-            valeur = model.V_lineCC_parallel[j,o]*(model.rho*pi*model.Dint_CC_parallel[j,o]*model.Dint_CC_parallel[j,o]/4) - model.M_lineCC_parallel[j,o]
-            return - model.M_bigM*(1-model.Y_lineCC_parallel[j,o]) <= valeur <= model.M_bigM*(1-model.Y_lineCC_parallel[j,o])
-        self.model.Def_V_lineCC_parallel_bigM = pe.Constraint(self.model.j,self.model.o,rule=Def_V_lineCC_parallel_rule_bigM)
+            valeur = (
+                model.V_lineCC_parallel[j, o] *
+                model.rho * pi * model.Dint_CC_parallel[j, o] * model.Dint_CC_parallel[j, o] / 4 -
+                model.M_lineCC_parallel[j, o]
+            )
+            return (
+                - model.M_bigM * (1 - model.Y_lineCC_parallel[j, o]) <=
+                valeur <=
+                model.M_bigM * (1 - model.Y_lineCC_parallel[j, o])
+            )
+        self.model.Def_V_lineCC_parallel_bigM = pe.Constraint(
+            self.model.j, self.model.o, rule=Def_V_lineCC_parallel_rule_bigM)
 
-        def Def_V_lineCC_return_rule_bigM(model,o,j):
+        def Def_V_lineCC_return_rule_bigM(model, o, j):
             """Inéquation du bigM sur le débit entre consommateurs - RETOUR"""
-            valeur = model.V_lineCC_return[o,j]*(model.rho*pi*model.Dint_CC_return[o,j]*model.Dint_CC_return[o,j]/4) - model.M_lineCC_return[o,j]
-            return - model.M_bigM*(1-model.Y_lineCC_return[o,j]) <= valeur <= model.M_bigM*(1-model.Y_lineCC_return[o,j])
-        self.model.Def_V_lineCC_return_bigM = pe.Constraint(self.model.o,self.model.j,rule=Def_V_lineCC_return_rule_bigM)
+            valeur = (
+                model.V_lineCC_return[o, j] *
+                model.rho * pi * model.Dint_CC_return[o, j] * model.Dint_CC_return[o, j] / 4 -
+                model.M_lineCC_return[o, j]
+            )
+            return (
+                - model.M_bigM * (1 - model.Y_lineCC_return[o, j]) <=
+                valeur <=
+                model.M_bigM * (1 - model.Y_lineCC_return[o, j])
+            )
+        self.model.Def_V_lineCC_return_bigM = pe.Constraint(
+            self.model.o, self.model.j, rule=Def_V_lineCC_return_rule_bigM)
 
-        ## Vitesses maximals et minimals
-        def Ex_V_linePC_max_rule(model,i,j):
+        # Vitesses maximales et minimales
+        def Ex_V_linePC_max_rule(model, i, j):
             """Permet de definir une vitesse min/max que si la canalisation existe"""
-            return model.V_linePC[i,j] <= model.V_max*model.Y_linePC[i,j]
-        self.model.Ex_V_linePC_max = pe.Constraint(self.model.i,self.model.j,rule=Ex_V_linePC_max_rule)
+            return model.V_linePC[i, j] <= model.V_max * model.Y_linePC[i, j]
+        self.model.Ex_V_linePC_max = pe.Constraint(
+            self.model.i, self.model.j, rule=Ex_V_linePC_max_rule)
 
-        def Ex_V_linePC_min_rule(model,i,j):
+        def Ex_V_linePC_min_rule(model, i, j):
             """Permet de definir une vitesse min/max que si la canalisation existe"""
-            return model.V_linePC[i,j] >= model.V_min*model.Y_linePC[i,j]
-        self.model.Ex_V_linePC_min = pe.Constraint(self.model.i,self.model.j,rule=Ex_V_linePC_min_rule)
+            return model.V_linePC[i, j] >= model.V_min * model.Y_linePC[i, j]
+        self.model.Ex_V_linePC_min = pe.Constraint(
+            self.model.i, self.model.j, rule=Ex_V_linePC_min_rule)
 
-        def Ex_V_lineCP_max_rule(model,j,i):
+        def Ex_V_lineCP_max_rule(model, j, i):
             """Permet de definir une vitesse min/max que si la canalisation existe"""
-            return model.V_lineCP[j,i] <= model.V_max*model.Y_lineCP[j,i]
-        self.model.Ex_V_lineCP_max = pe.Constraint(self.model.j,self.model.i,rule=Ex_V_lineCP_max_rule)
+            return model.V_lineCP[j, i] <= model.V_max * model.Y_lineCP[j, i]
+        self.model.Ex_V_lineCP_max = pe.Constraint(
+            self.model.j, self.model.i, rule=Ex_V_lineCP_max_rule)
 
-        def Ex_V_lineCP_min_rule(model,j,i):
+        def Ex_V_lineCP_min_rule(model, j, i):
             """Permet de definir une vitesse min/max que si la canalisation existe"""
-            return model.V_lineCP[j,i] >= model.V_min*model.Y_lineCP[j,i]
-        self.model.Ex_V_lineCP_min = pe.Constraint(self.model.j,self.model.i,rule=Ex_V_lineCP_min_rule)
+            return model.V_lineCP[j, i] >= model.V_min * model.Y_lineCP[j, i]
+        self.model.Ex_V_lineCP_min = pe.Constraint(
+            self.model.j, self.model.i, rule=Ex_V_lineCP_min_rule)
 
-        def Ex_V_lineCC_parallel_max_rule(model,j,o):
+        def Ex_V_lineCC_parallel_max_rule(model, j, o):
             """Permet de definir une vitesse min/max que si la canalisation existe"""
-            return model.V_lineCC_parallel[j,o] <= model.V_max*model.Y_lineCC_parallel[j,o]
-        self.model.Ex_V_lineCC_parallel_max = pe.Constraint(self.model.j,self.model.o,rule=Ex_V_lineCC_parallel_max_rule)
+            return model.V_lineCC_parallel[j, o] <= model.V_max * model.Y_lineCC_parallel[j, o]
+        self.model.Ex_V_lineCC_parallel_max = pe.Constraint(
+            self.model.j, self.model.o, rule=Ex_V_lineCC_parallel_max_rule)
 
-        def Ex_V_lineCC_parallel_min_rule(model,j,o):
+        def Ex_V_lineCC_parallel_min_rule(model, j, o):
             """Permet de definir une vitesse min/max que si la canalisation existe"""
-            return model.V_lineCC_parallel[j,o] >= model.V_min*model.Y_lineCC_parallel[j,o]
-        self.model.Ex_V_lineCC_parallel_min = pe.Constraint(self.model.j,self.model.o,rule=Ex_V_lineCC_parallel_min_rule)
+            return model.V_lineCC_parallel[j, o] >= model.V_min * model.Y_lineCC_parallel[j, o]
+        self.model.Ex_V_lineCC_parallel_min = pe.Constraint(
+            self.model.j, self.model.o, rule=Ex_V_lineCC_parallel_min_rule)
 
-        def Ex_V_lineCC_return_max_rule(model,o,j):
+        def Ex_V_lineCC_return_max_rule(model, o, j):
             """Permet de definir une vitesse min/max que si la canalisation existe"""
-            return model.V_lineCC_return[o,j] <= model.V_max*model.Y_lineCC_return[o,j]
-        self.model.Ex_V_lineCC_return_max = pe.Constraint(self.model.o,self.model.j,rule=Ex_V_lineCC_return_max_rule)
+            return model.V_lineCC_return[o, j] <= model.V_max * model.Y_lineCC_return[o, j]
+        self.model.Ex_V_lineCC_return_max = pe.Constraint(
+            self.model.o, self.model.j, rule=Ex_V_lineCC_return_max_rule)
 
-        def Ex_V_lineCC_return_min_rule(model,o,j):
+        def Ex_V_lineCC_return_min_rule(model, o, j):
             """Permet de definir une vitesse min/max que si la canalisation existe"""
-            return model.V_lineCC_return[o,j] >= model.V_min*model.Y_lineCC_return[o,j]
-        self.model.Ex_V_lineCC_return_min = pe.Constraint(self.model.o,self.model.j,rule=Ex_V_lineCC_return_min_rule)
+            return model.V_lineCC_return[o, j] >= model.V_min * model.Y_lineCC_return[o, j]
+        self.model.Ex_V_lineCC_return_min = pe.Constraint(
+            self.model.o, self.model.j, rule=Ex_V_lineCC_return_min_rule)
 
-        # Definition de débits maximals et minimals si la canalisation existe, si la canalisations n'existe pas le débit est nul
-        def Ex_M_prod_max_rule(model,i,k):
+        # Definition de débits maximaux et minimaux si la canalisation existe
+        # Si la canalisations n'existe pas le débit est nul
+        def Ex_M_prod_max_rule(model, i, k):
             """Débit maximal pour chaque technologies k"""
-            return model.M_prod[i,k] <= model.M_max*model.Y_P[i,k]
-        self.model.Ex_M_prod_max = pe.Constraint(self.model.i,self.model.k,rule=Ex_M_prod_max_rule)
+            return model.M_prod[i, k] <= model.M_max * model.Y_P[i, k]
+        self.model.Ex_M_prod_max = pe.Constraint(
+            self.model.i, self.model.k, rule=Ex_M_prod_max_rule)
 
-        def Ex_M_prod_min_rule(model,i,k):
+        def Ex_M_prod_min_rule(model, i, k):
             """Débit minimal pour chaque technologies k"""
-            return model.M_prod[i,k] >= model.M_min*model.Y_P[i,k]
-        self.model.Ex_M_prod_min = pe.Constraint(self.model.i,self.model.k,rule=Ex_M_prod_min_rule)
+            return model.M_prod[i, k] >= model.M_min * model.Y_P[i, k]
+        self.model.Ex_M_prod_min = pe.Constraint(
+            self.model.i, self.model.k, rule=Ex_M_prod_min_rule)
 
-        def Ex_M_linePC_max_rule(model,i,j):
+        def Ex_M_linePC_max_rule(model, i, j):
             """Débit maximal dans les canalisations entre producteurs et consommateurs - ALLER"""
-            return model.M_linePC[i,j] <= model.M_max*model.Y_linePC[i,j]
-        self.model.Ex_M_linePC_max = pe.Constraint(self.model.i,self.model.j,rule=Ex_M_linePC_max_rule)
+            return model.M_linePC[i, j] <= model.M_max * model.Y_linePC[i, j]
+        self.model.Ex_M_linePC_max = pe.Constraint(
+            self.model.i, self.model.j, rule=Ex_M_linePC_max_rule)
 
-        def Ex_M_lineCP_max_rule(model,j,i):
+        def Ex_M_lineCP_max_rule(model, j, i):
             """Débit maximal dans les canalisations entre producteurs et consommateurs - RETOUR"""
-            return model.M_lineCP[j,i] <= model.M_max*model.Y_lineCP[j,i]
-        self.model.Ex_M_lineCP_max = pe.Constraint(self.model.j,self.model.i,rule=Ex_M_lineCP_max_rule)
+            return model.M_lineCP[j, i] <= model.M_max * model.Y_lineCP[j, i]
+        self.model.Ex_M_lineCP_max = pe.Constraint(
+            self.model.j, self.model.i, rule=Ex_M_lineCP_max_rule)
 
-        def Ex_M_lineCC_parallel_max_rule(model,j,o):
+        def Ex_M_lineCC_parallel_max_rule(model, j, o):
             """Débit maximal dans les canalisations entre consommateurs - ALLER"""
-            return model.M_lineCC_parallel[j,o] <= model.M_max*model.Y_lineCC_parallel[j,o]
-        self.model.Ex_M_lineCC_parallel_max = pe.Constraint(self.model.j,self.model.o,rule=Ex_M_lineCC_parallel_max_rule)
+            return model.M_lineCC_parallel[j, o] <= model.M_max * model.Y_lineCC_parallel[j, o]
+        self.model.Ex_M_lineCC_parallel_max = pe.Constraint(
+            self.model.j, self.model.o, rule=Ex_M_lineCC_parallel_max_rule)
 
-        def Ex_M_lineCC_return_max_rule(model,o,j):
+        def Ex_M_lineCC_return_max_rule(model, o, j):
             """Débit maximal dans les canalisations entre consommateurs - RETOUR"""
-            return model.M_lineCC_return[o,j] <= model.M_max*model.Y_lineCC_return[o,j]
-        self.model.Ex_M_lineCC_return_max = pe.Constraint(self.model.o,self.model.j,rule=Ex_M_lineCC_return_max_rule)
-
+            return model.M_lineCC_return[o, j] <= model.M_max * model.Y_lineCC_return[o, j]
+        self.model.Ex_M_lineCC_return_max = pe.Constraint(
+            self.model.o, self.model.j, rule=Ex_M_lineCC_return_max_rule)
 
         # BILAN DE MASSE
-        def bilanA_debit_supply_rule(model,j):
+        def bilanA_debit_supply_rule(model, j):
             """Bilan de masse au point A d'un noeud consommateur
-            Un consommateur (M_supply) peut être alimenté par un producteur (M_linePC) ou un autre consommateur (M_lineCC_parallel)"""
-            return sum(model.M_linePC[i,j] for i in model.i) + sum(model.M_lineCC_parallel[o,j] for o in model.o if o != j) == model.M_supply[j]
-        self.model.bilanA_debit_supply = pe.Constraint(self.model.j,rule=bilanA_debit_supply_rule)
+            Un consommateur (M_supply) peut être alimenté par un producteur (M_linePC)
+            ou un autre consommateur (M_lineCC_parallel).
+            """
+            return (
+                sum(model.M_linePC[i, j] for i in model.i) +
+                sum(model.M_lineCC_parallel[o, j] for o in model.o if o != j)
+            ) == model.M_supply[j]
+        self.model.bilanA_debit_supply = pe.Constraint(self.model.j, rule=bilanA_debit_supply_rule)
 
-        def bilanB_debit_hx_in_rule(model,j):
+        def bilanB_debit_hx_in_rule(model, j):
             """Bilan de masse au point B d'un noeud consommateur
-            Seule une partie du débit (M_supply) alimente le consommateur (M_hx), le reste part vers une autre consommateur (M_lineCC_parallel),
-            sauf s'il est en fin de réseau et dans ce cas M_supply = M_hx"""
-            return model.M_supply[j] == model.M_hx[j] + sum(model.M_lineCC_parallel[j,o] for o in model.o if o != j)
-        self.model.bilanB_debit_hx_in = pe.Constraint(self.model.j,rule=bilanB_debit_hx_in_rule)
+            Seule une partie du débit (M_supply) alimente le consommateur (M_hx),
+            le reste part vers une autre consommateur (M_lineCC_parallel),
+            sauf s'il est en fin de réseau et dans ce cas M_supply = M_hx
+            """
+            return model.M_supply[j] == (
+                model.M_hx[j] +
+                sum(model.M_lineCC_parallel[j, o] for o in model.o if o != j)
+            )
+        self.model.bilanB_debit_hx_in = pe.Constraint(self.model.j, rule=bilanB_debit_hx_in_rule)
 
-        def bilanD_debit_hx_out_rule(model,j):
+        def bilanD_debit_hx_out_rule(model, j):
             """Bilan de masse au point D d'un noeud consommateur
-            Le débit (M_return) à chaque consommateur est composé du débit en sortie de l'échangeur (M_hx) et du débit de retour des autres
-            consommateurs (M_lineCC_return), sauf s'il est en fin de réseau et dans ce cas M_return = M_hx"""
-            return self.model.M_hx[j] + sum(self.model.M_lineCC_return[o,j] for o in self.model.o if o != j) == self.model.M_return[j]
-        self.model.bilanD_debit_hx_out = pe.Constraint(self.model.j,rule=bilanD_debit_hx_out_rule)
+            Le débit (M_return) à chaque consommateur est composé
+            du débit en sortie de l'échangeur (M_hx) et du débit de retour des
+            autres consommateurs (M_lineCC_return),
+            sauf s'il est en fin de réseau et dans ce cas M_return = M_hx
+            """
+            return (
+                self.model.M_hx[j] +
+                sum(self.model.M_lineCC_return[o, j] for o in self.model.o if o != j)
+            ) == self.model.M_return[j]
+        self.model.bilanD_debit_hx_out = pe.Constraint(self.model.j, rule=bilanD_debit_hx_out_rule)
 
-        def bilanE_debit_return_rule(model,j):
+        def bilanE_debit_return_rule(model, j):
             """Bilan de masse au point E d'un noeud consommateur
-            Après le point D, le débit (M_return) peut soit retourner vers la production (M_lineCP) soit vers un autre consommateur (M_lineCC_return)"""
-            return model.M_return[j] == sum(model.M_lineCP[j,i] for i in model.i) + sum(model.M_lineCC_return[j,o] for o in model.o if o != j)
-        self.model.bilanE_debit_return = pe.Constraint(self.model.j,rule=bilanE_debit_return_rule)
+            Après le point D, le débit (M_return) peut soit retourner vers
+            la production (M_lineCP) soit vers un autre consommateur (M_lineCC_return)
+            """
+            return model.M_return[j] == (
+                sum(model.M_lineCP[j, i] for i in model.i) +
+                sum(model.M_lineCC_return[j, o] for o in model.o if o != j)
+            )
+        self.model.bilanE_debit_return = pe.Constraint(self.model.j, rule=bilanE_debit_return_rule)
 
-        def bilanF_debit_prod_tot_in_rule(model,i):
+        def bilanF_debit_prod_tot_in_rule(model, i):
             """Bilan de masse au point F d'un noeud producteur
-            La débit de retour à la production (M_prod_tot) est égal au débit de retour du ou des derniers consommateurs par branche (M_lineCP)"""
-            return sum(model.M_lineCP[j,i] for j in model.j) == model.M_prod_tot[i]
-        self.model.bilanF_debit_prod_tot_in = pe.Constraint(self.model.i,rule=bilanF_debit_prod_tot_in_rule)
+            La débit de retour à la production (M_prod_tot) est égal
+            au débit de retour du ou des derniers consommateurs par branche (M_lineCP)
+            """
+            return sum(model.M_lineCP[j, i] for j in model.j) == model.M_prod_tot[i]
+        self.model.bilanF_debit_prod_tot_in = pe.Constraint(
+            self.model.i, rule=bilanF_debit_prod_tot_in_rule)
 
-        def bilanI_debit_prod_tot_out_rule(model,i):
+        def bilanI_debit_prod_tot_out_rule(model, i):
             """Bilan de masse au point I d'un noeud producteur
-            La débit de départ à la production (M_prod_tot) est égal aux débits partants vers les premiers consommateurs par branche (M_linePC)"""
-            return model.M_prod_tot[i] == sum(model.M_linePC[i,j] for j in model.j)
-        self.model.bilanI_debit_prod_tot_out = pe.Constraint(self.model.i,rule=bilanI_debit_prod_tot_out_rule)
+            La débit de départ à la production (M_prod_tot) est égal
+            aux débits partants vers les premiers consommateurs par branche (M_linePC)
+            """
+            return model.M_prod_tot[i] == sum(model.M_linePC[i, j] for j in model.j)
+        self.model.bilanI_debit_prod_tot_out = pe.Constraint(
+            self.model.i, rule=bilanI_debit_prod_tot_out_rule)
 
-        def bilanGH_debit_prod_out_rule(model,i):
+        def bilanGH_debit_prod_out_rule(model, i):
             """Bilan de masse aux points G et H d'un noeud producteur
-            Le débit total partant/rentrant de la production i est égal à la somme des débit de chaque unité de production k associés"""
-            return model.M_prod_tot[i] == sum(model.M_prod[i,k] for k in model.k)
-        self.model.bilanGH_debit_prod_out = pe.Constraint(self.model.i,rule=bilanGH_debit_prod_out_rule)
-
+            Le débit total partant/rentrant de la production i est égal
+            à la somme des débit de chaque unité de production k associés
+            """
+            return model.M_prod_tot[i] == sum(model.M_prod[i, k] for k in model.k)
+        self.model.bilanGH_debit_prod_out = pe.Constraint(
+            self.model.i, rule=bilanGH_debit_prod_out_rule)
 
         # BILAN D'ENERGIE ET EGALITE DE TEMPERATURE
-        def bilanA_H_supply_rule(model,j):
+        def bilanA_H_supply_rule(model, j):
             """Bilan d'énergie au point A d'un noeud consommateur car point convergeant"""
-            return model.M_supply[j]*model.T_supply[j] == (
-            sum(model.M_linePC[i,j]*model.T_linePC_out[i,j] for i in model.i)
-            + sum(model.M_lineCC_parallel[o,j]*model.T_lineCC_parallel_out[o,j] for o in model.o if o != j)
+            return model.M_supply[j] * model.T_supply[j] == (
+                sum(model.M_linePC[i, j] * model.T_linePC_out[i, j] for i in model.i) +
+                sum(model.M_lineCC_parallel[o, j] * model.T_lineCC_parallel_out[o, j]
+                    for o in model.o if o != j)
             )
-        self.model.bilanA_H_supply = pe.Constraint(self.model.j,rule=bilanA_H_supply_rule)
+        self.model.bilanA_H_supply = pe.Constraint(self.model.j, rule=bilanA_H_supply_rule)
 
-        def bilanB_T_hx_in_rule_bigM(model,j,o):
-            """Première égalité de température au point B d'un noeud consommateur car point divergeant
+        def bilanB_T_hx_in_rule_bigM(model, j, o):
+            """Première égalité de température au point B d'un noeud consommateur car point divergent
             Tsupply = TlineCC_parallel
             Inéquation du bigM"""
-            valeur = model.T_supply[j] - model.T_lineCC_parallel_in[j,o]
-            return - model.T_bigM*(1-model.Y_lineCC_parallel[j,o]) <= valeur <= model.T_bigM*(1-model.Y_lineCC_parallel[j,o])
-        self.model.bilanB_T_hx_in_bigM = pe.Constraint(self.model.j,self.model.o,rule=bilanB_T_hx_in_rule_bigM)
+            valeur = model.T_supply[j] - model.T_lineCC_parallel_in[j, o]
+            return (
+                - model.T_bigM * (1 - model.Y_lineCC_parallel[j, o]) <=
+                valeur <=
+                model.T_bigM * (1 - model.Y_lineCC_parallel[j, o])
+            )
+        self.model.bilanB_T_hx_in_bigM = pe.Constraint(
+            self.model.j, self.model.o, rule=bilanB_T_hx_in_rule_bigM)
 
-        def bilanB2_T_hx_in_rule(model,j):
+        def bilanB2_T_hx_in_rule(model, j):
             """Deuxième égalité de température au point B d'un noeud consommateur car point divergeant
             Tsupply = Thx
-            Pas de bigM car si le consommateur existe l'échangeur est forcément alimenté alors que la liaison avec
-            un autre consommateur (TlineCC_parallel) n'existe pas forcément"""
+            Pas de bigM car si le consommateur existe l'échangeur est forcément alimenté alors
+            que la liaison avec un autre consommateur (TlineCC_parallel) n'existe pas forcément
+            """
             return model.T_hx_in[j] == model.T_supply[j]
-        self.model.bilanB2_T_hx_in = pe.Constraint(self.model.j,rule=bilanB2_T_hx_in_rule)
+        self.model.bilanB2_T_hx_in = pe.Constraint(self.model.j, rule=bilanB2_T_hx_in_rule)
 
-        def bilanD_H_hx_out_rule(model,j):
+        def bilanD_H_hx_out_rule(model, j):
             """Bilan d'énergie au point D d'un noeud consommateur car point convergeant"""
-            return model.M_hx[j]*model.T_hx_out[j]+sum(model.M_lineCC_return[o,j]*model.T_lineCC_return_out[o,j] for o in model.o if o != j) == model.M_return[j]*model.T_return[j]
-        self.model.bilanD_H_hx_out = pe.Constraint(self.model.j,rule=bilanD_H_hx_out_rule)
+            return (
+                model.M_hx[j] * model.T_hx_out[j] +
+                sum(model.M_lineCC_return[o, j] * model.T_lineCC_return_out[o, j]
+                    for o in model.o if o != j)
+            ) == model.M_return[j] * model.T_return[j]
+        self.model.bilanD_H_hx_out = pe.Constraint(self.model.j, rule=bilanD_H_hx_out_rule)
 
-        def bilanE_T_return_rule_bigM(model,i,j):
+        def bilanE_T_return_rule_bigM(model, i, j):
             """Première égalité de température au point E d'un noeud consommateur car point divergeant
             Treturn = TlineCP
-            Inéquation du bigM"""
-            valeur = model.T_return[j] - model.T_lineCP_in[j,i]
-            return - model.T_bigM*(1-model.Y_lineCP[j,i]) <= valeur <= model.T_bigM*(1-model.Y_lineCP[j,i])
-        self.model.bilanE_T_return_bigM = pe.Constraint(self.model.i,self.model.j,rule=bilanE_T_return_rule_bigM)
+            Inéquation du bigM
+            """
+            valeur = model.T_return[j] - model.T_lineCP_in[j, i]
+            return (
+                - model.T_bigM * (1 - model.Y_lineCP[j, i]) <=
+                valeur <=
+                model.T_bigM * (1 - model.Y_lineCP[j, i])
+            )
+        self.model.bilanE_T_return_bigM = pe.Constraint(
+            self.model.i, self.model.j, rule=bilanE_T_return_rule_bigM)
 
-        def bilanE2_T_return_rule_bigM(model,o,j):
+        def bilanE2_T_return_rule_bigM(model, o, j):
             """Deuxième égalité de température au point E d'un noeud consommateur car point divergeant
             Treturn = T_lineCC_return
-            Inéquation du bigM"""
-            valeur = model.T_return[o] - model.T_lineCC_return_in[o,j]
-            return - self.model.T_bigM*(1-self.model.Y_lineCC_return[o,j]) <= valeur <= self.model.T_bigM*(1-self.model.Y_lineCC_return[o,j])
-        self.model.bilanE2_T_return_bigM = pe.Constraint(self.model.o,self.model.j,rule=bilanE2_T_return_rule_bigM)
+            Inéquation du bigM
+            """
+            valeur = model.T_return[o] - model.T_lineCC_return_in[o, j]
+            return (
+                - self.model.T_bigM * (1 - self.model.Y_lineCC_return[o, j]) <=
+                valeur <=
+                self.model.T_bigM * (1 - self.model.Y_lineCC_return[o, j])
+            )
+        self.model.bilanE2_T_return_bigM = pe.Constraint(
+            self.model.o, self.model.j, rule=bilanE2_T_return_rule_bigM)
 
-        def bilanF_H_prod_tot_in_rule(model,i):
+        def bilanF_H_prod_tot_in_rule(model, i):
             """Bilan d'énergie au point F d'un noeud producteur car point convergeant"""
-            return sum(model.M_lineCP[j,i]*model.T_lineCP_out[j,i] for j in model.j) == model.M_prod_tot[i]*model.T_prod_tot_in[i]
-        self.model.bilanF_H_prod_tot_in = pe.Constraint(self.model.i,rule=bilanF_H_prod_tot_in_rule)
+            return (
+                sum(model.M_lineCP[j, i] * model.T_lineCP_out[j, i] for j in model.j)
+            ) == model.M_prod_tot[i] * model.T_prod_tot_in[i]
+        self.model.bilanF_H_prod_tot_in = pe.Constraint(
+            self.model.i, rule=bilanF_H_prod_tot_in_rule)
 
-        def bilanG_T_prod_in_rule_bigM(model,i,k):
+        def bilanG_T_prod_in_rule_bigM(model, i, k):
             """Egalité de température au point G d'un noeud producteur car point convergeant
             Tprod_tot = Tprod : la température de retour est la même pour toutes les technologies
             Inéquation du bigM"""
-            valeur = model.T_prod_tot_in[i] - model.T_prod_in[i,k]
-            return - model.T_bigM*(1-model.Y_P[i,k]) <= valeur <= model.T_bigM*(1-model.Y_P[i,k])
-        self.model.bilanG_T_prod_in_bigM = pe.Constraint(self.model.i,self.model.k,rule=bilanG_T_prod_in_rule_bigM)
+            valeur = model.T_prod_tot_in[i] - model.T_prod_in[i, k]
+            return (
+                - model.T_bigM * (1 - model.Y_P[i, k]) <=
+                valeur <=
+                model.T_bigM * (1 - model.Y_P[i, k])
+            )
+        self.model.bilanG_T_prod_in_bigM = pe.Constraint(
+            self.model.i, self.model.k, rule=bilanG_T_prod_in_rule_bigM)
 
-        def bilanH_H_prod_out_rule(model,i):
+        def bilanH_H_prod_out_rule(model, i):
             """Bilan d'énergie au point H d'un noeud producteur car point convergeant
-            Mélange des fluides provenant des technologies k à la production i"""
-            return sum(model.M_prod[i,k]*model.T_prod_out[i,k] for k in model.k) == model.M_prod_tot[i]*model.T_prod_tot_out[i]
-        self.model.bilanH_H_prod_out = pe.Constraint(self.model.i,rule=bilanH_H_prod_out_rule)
+            Mélange des fluides provenant des technologies k à la production i
+            """
+            return (
+                sum(model.M_prod[i, k] * model.T_prod_out[i, k] for k in model.k)
+            ) == model.M_prod_tot[i] * model.T_prod_tot_out[i]
+        self.model.bilanH_H_prod_out = pe.Constraint(
+            self.model.i, rule=bilanH_H_prod_out_rule)
 
-        def bilanI_T_prod_tot_out_rule_bigM(model,i,j):
+        def bilanI_T_prod_tot_out_rule_bigM(model, i, j):
             """Egalité de température au point I d'un noeud producteur car point divergeant
             La production peut alimenter ou non les consommateurs
-            Inéquation du bigM"""
-            valeur = model.T_linePC_in[i,j] - model.T_prod_tot_out[i]
-            return - model.T_bigM*(1-model.Y_linePC[i,j]) <= valeur <= model.T_bigM*(1-model.Y_linePC[i,j])
-        self.model.bilanI_T_prod_tot_out_bigM = pe.Constraint(self.model.i,self.model.j,rule=bilanI_T_prod_tot_out_rule_bigM)
+            Inéquation du bigM
+            """
+            valeur = model.T_linePC_in[i, j] - model.T_prod_tot_out[i]
+            return (
+                - model.T_bigM * (1 - model.Y_linePC[i, j]) <=
+                valeur <=
+                model.T_bigM * (1 - model.Y_linePC[i, j])
+            )
+        self.model.bilanI_T_prod_tot_out_bigM = pe.Constraint(
+            self.model.i, self.model.j, rule=bilanI_T_prod_tot_out_rule_bigM)
 
-        def bilan_H_inst_rule_bigM1(model,i,k):
+        def bilan_H_inst_rule_bigM1(model, i, k):
             """Bilan de chaleur à la production si elle existent
             Puissance à installer * efficacité = Puissance requise
-            Inéquation 1 du bigM"""
-            return model.H_inst[i,k]*model.Eff[k] <= model.M_prod[i,k] * model.Cp * (model.T_prod_out[i,k] - model.T_prod_in[i,k]) + model.H_inst_bigM*(1-model.Y_P[i,k])
-        self.model.bilan_H_inst_bigM1 = pe.Constraint(self.model.i,self.model.k,rule=bilan_H_inst_rule_bigM1)
+            Inéquation 1 du bigM
+            """
+            return (
+                model.H_inst[i, k] * model.Eff[k] <=
+                model.M_prod[i, k] * model.Cp * (model.T_prod_out[i, k] - model.T_prod_in[i, k]) +
+                model.H_inst_bigM * (1 - model.Y_P[i, k])
+            )
+        self.model.bilan_H_inst_bigM1 = pe.Constraint(
+            self.model.i, self.model.k, rule=bilan_H_inst_rule_bigM1)
 
-        def bilan_H_inst_rule_bigM2(model,i,k):
+        def bilan_H_inst_rule_bigM2(model, i, k):
             """..... Inéquation 2 du bigM"""
-            return model.H_inst[i,k]*model.Eff[k] >= model.M_prod[i,k] * model.Cp * (model.T_prod_out[i,k] - model.T_prod_in[i,k]) - model.H_inst_bigM*(1-model.Y_P[i,k])
-        self.model.bilan_H_inst_bigM2 = pe.Constraint(self.model.i,self.model.k,rule=bilan_H_inst_rule_bigM2)
+            return (
+                model.H_inst[i, k] * model.Eff[k] >=
+                model.M_prod[i, k] * model.Cp * (model.T_prod_out[i, k] - model.T_prod_in[i, k]) -
+                model.H_inst_bigM * (1 - model.Y_P[i, k])
+            )
+        self.model.bilan_H_inst_bigM2 = pe.Constraint(
+            self.model.i, self.model.k, rule=bilan_H_inst_rule_bigM2)
 
-        def bilan_chaleur_HX_rule(model,j):
-            """Bilan de chaleur pour chaque consommateur, pas de bigM, un consommateur est forcément alimenté
+        def bilan_chaleur_HX_rule(model, j):
+            """Bilan de chaleur pour chaque consommateur
+            Pas de bigM, un consommateur est forcément alimenté
             Puissance requise = débit * Cp * delta T
             Inéquation 1 du bigM"""
-            return model.H_hx[j] == model.M_hx[j] * model.Cp * (model.T_hx_in[j]-model.T_hx_out[j])
-        self.model.bilan_chaleur_HX = pe.Constraint(self.model.j,rule=bilan_chaleur_HX_rule)
+            return model.H_hx[j] == (
+                model.M_hx[j] * model.Cp * (model.T_hx_in[j] - model.T_hx_out[j]))
+        self.model.bilan_chaleur_HX = pe.Constraint(self.model.j, rule=bilan_chaleur_HX_rule)
 
-        def bilan_DT1_rule(model,j):
+        def bilan_DT1_rule(model, j):
             """Delta T côté chaud de l'échangeur (DT1) = entrée au primaire - sortie au secondaire"""
             return model.DT1[j] == model.T_hx_in[j] - model.T_req_out[j]
-        self.model.bilan_DT1 = pe.Constraint(self.model.j,rule=bilan_DT1_rule)
-        def bilan_DT2_rule(model,j):
+        self.model.bilan_DT1 = pe.Constraint(self.model.j, rule=bilan_DT1_rule)
+
+        def bilan_DT2_rule(model, j):
             """Delta T côté froid de l'échangeur (DT2) = sortie au primaire - entrée au secondaire"""
             return model.DT2[j] == model.T_hx_out[j] - model.T_req_in[j]
-        self.model.bilan_DT2 = pe.Constraint(self.model.j,rule=bilan_DT2_rule)
+        self.model.bilan_DT2 = pe.Constraint(self.model.j, rule=bilan_DT2_rule)
 
-        def bilan_DT1_pinch_rule(model,j):
+        def bilan_DT1_pinch_rule(model, j):
             """DT1 doit être supérieur au pincement minimun par définition"""
             return model.DT1[j] >= model.T_hx_pinch
-        self.model.bilan_DT1_pinch = pe.Constraint(self.model.j,rule=bilan_DT1_pinch_rule)
+        self.model.bilan_DT1_pinch = pe.Constraint(self.model.j, rule=bilan_DT1_pinch_rule)
 
-        def bilan_DT2_pinch_rule(model,j):
+        def bilan_DT2_pinch_rule(model, j):
             """DT2 doit être supérieur au pincement minimum par définition"""
             return model.DT2[j] >= model.T_hx_pinch
-        self.model.bilan_DT2_pinch = pe.Constraint(self.model.j,rule=bilan_DT2_pinch_rule)
+        self.model.bilan_DT2_pinch = pe.Constraint(self.model.j, rule=bilan_DT2_pinch_rule)
 
-        def diffTemplog_rule(model,j):
+        def diffTemplog_rule(model, j):
             """Calcul de la DTLM: Différence logarithmique de température à l’échangeur de chaleur (°C)"""
-            return model.DTLM[j] == (model.DT1[j] * model.DT2[j] * 0.5 * (model.DT1[j] + model.DT2[j])) ** (1/3)
+            return model.DTLM[j] == (
+                model.DT1[j] * model.DT2[j] * 0.5 * (model.DT1[j] + model.DT2[j])
+            ) ** (1 / 3)
         self.model.diffTemplog = pe.Constraint(self.model.j, rule=diffTemplog_rule)
 
-        def bilan_chaleur_HX_DTLM_rule(model,j):
+        def bilan_chaleur_HX_DTLM_rule(model, j):
             """Bilan de puissance à l'échangeur avec le DTLM qui dépend des températures au primaire et secondaire
             H = coeff_échange * surface * DTLM"""
             return model.H_hx[j] == model.A_hx[j] * model.K_hx * model.DTLM[j]
-        self.model.bilan_chaleur_HX_DTLM = pe.Constraint(self.model.j,rule=bilan_chaleur_HX_DTLM_rule)
+        self.model.bilan_chaleur_HX_DTLM = pe.Constraint(
+            self.model.j, rule=bilan_chaleur_HX_DTLM_rule)
 
         # Pertes thermiques (ici négligées car T_in = T_out)
-        def loss_linePC_rule(model,i,j):
+        def loss_linePC_rule(model, i, j):
             """Pertes thermiques sur les conduites entre producteur et consommateur - ALLER"""
-            return model.T_linePC_out[i,j] == model.T_linePC_in[i,j]
-        self.model.loss_linePC = pe.Constraint(self.model.i, self.model.j,rule=loss_linePC_rule)
+            return model.T_linePC_out[i, j] == model.T_linePC_in[i, j]
+        self.model.loss_linePC = pe.Constraint(self.model.i, self.model.j, rule=loss_linePC_rule)
 
-        def loss_lineCP_rule(model,j,i):
+        def loss_lineCP_rule(model, j, i):
             """Pertes thermiques sur les conduites entre producteur et consommateur - RETOUR"""
-            return model.T_lineCP_out[j,i] == model.T_lineCP_in[j,i]
-        self.model.loss_lineCP = pe.Constraint(self.model.j, self.model.i,rule=loss_lineCP_rule)
+            return model.T_lineCP_out[j, i] == model.T_lineCP_in[j, i]
+        self.model.loss_lineCP = pe.Constraint(self.model.j, self.model.i, rule=loss_lineCP_rule)
 
-        def loss_lineCC_parallel_rule(model,j,o):
+        def loss_lineCC_parallel_rule(model, j, o):
             """Pertes thermiques sur les conduites entre consommateur - ALLER"""
-            return model.T_lineCC_parallel_out[j,o] == model.T_lineCC_parallel_in[j,o]
-        self.model.loss_lineCC_parallel = pe.Constraint(self.model.j, self.model.o,rule=loss_lineCC_parallel_rule)
+            return model.T_lineCC_parallel_out[j, o] == model.T_lineCC_parallel_in[j, o]
+        self.model.loss_lineCC_parallel = pe.Constraint(
+            self.model.j, self.model.o, rule=loss_lineCC_parallel_rule)
 
-        def loss_lineCC_return_rule(model,o,j):
+        def loss_lineCC_return_rule(model, o, j):
             """Pertes thermiques sur les conduites entre consommateurs - RETOUR"""
-            return model.T_lineCC_return_out[o,j] == model.T_lineCC_return_in[o,j]
-        self.model.loss_lineCC_return = pe.Constraint(self.model.o, self.model.j,rule=loss_lineCC_return_rule)
+            return model.T_lineCC_return_out[o, j] == model.T_lineCC_return_in[o, j]
+        self.model.loss_lineCC_return = pe.Constraint(
+            self.model.o, self.model.j, rule=loss_lineCC_return_rule)
 
         # Contrainte à l'échangeur
-        def contrainte_appro_rule(model,j):
+        def contrainte_appro_rule(model, j):
             """La puissance calculée à l'échangeur doit être égale à celle requise rentrée par l'utilisateur"""
             return model.H_hx[j] == model.H_req[j]
         self.model.contrainte_appro = pe.Constraint(self.model.j, rule=contrainte_appro_rule)
@@ -1013,32 +1157,52 @@ class Model:
         # Termes de la fonction coût
         def cout_pompage_rule(model):
             """Coût de pompage"""
-            return model.C_pump == 1.e-6 * model.f_opex_pump * model.C_pump_unit * model.period * sum(
-                model.P_pump[i] * model.M_prod_tot[i] for i in model.i) * model.Eff_pump / model.rho
+            return model.C_pump == (
+                1.e-6 * model.f_opex_pump * model.C_pump_unit * model.period * sum(
+                    model.P_pump[i] * model.M_prod_tot[i] for i in model.i) *
+                model.Eff_pump / model.rho
+            )
         self.model.cout_pompage = pe.Constraint(rule=cout_pompage_rule)
 
         def cout_heat_rule(model):
             """Coût de la chaleur livrée"""
-            return model.C_heat == 1.e-6 * model.period * sum(model.f_opex[k] * model.C_heat_unit[k] * model.H_inst[i,k] for i in model.i for k in model.k)
+            return model.C_heat == (
+                1.e-6 * model.period * sum(
+                    model.f_opex[k] * model.C_heat_unit[k] * model.H_inst[i, k]
+                    for i in model.i for k in model.k)
+            )
         self.model.cout_heat = pe.Constraint(rule=cout_heat_rule)
 
         def cout_puissance_rule(model):
             """Coût de la puissance installée en chaufferie"""
-            return model.C_Hinst == 1.e-6 * model.f_capex * sum(model.C_Hprod_unit[k] * model.H_inst[i,k] for i in model.i for k in model.k)
+            return model.C_Hinst == (
+                1.e-6 * model.f_capex * sum(
+                    model.C_Hprod_unit[k] * model.H_inst[i, k]
+                    for i in model.i for k in model.k)
+            )
         self.model.cout_puissance = pe.Constraint(rule=cout_puissance_rule)
 
         def cout_echangeur_rule(model):
             """Coût des échangeurs"""
-            return model.C_hx == 1.e-6*model.f_capex*sum(model.C_hx_unit_a*model.H_hx[j]+model.C_hx_unit_b for j in model.j)
+            return model.C_hx == 1.e-6 * model.f_capex * sum(
+                model.C_hx_unit_a * model.H_hx[j] + model.C_hx_unit_b for j in model.j)
         self.model.cout_echangeur = pe.Constraint(rule=cout_echangeur_rule)
 
         def cout_canalisation_tuyau_rule(model):
             """Coût des tuyaux pré-isolés"""
-            return model.C_pipe == 1.e-6* model.f_capex*(
-            sum(model.L_PC[i,j]*(model.C_pipe_unit_a*model.Dint_PC[i,j]+model.C_pipe_unit_b) for i in model.i for j in model.j)
-            + sum(model.L_CP[j,i]*(model.C_pipe_unit_a*model.Dint_CP[j,i]+model.C_pipe_unit_b) for j in model.j for i in model.i)
-            + sum(model.L_CC_parallel[j,o]*(model.C_pipe_unit_a*model.Dint_CC_parallel[j,o]+model.C_pipe_unit_b) for j in model.j for o in model.o)
-            + sum(model.L_CC_return[j,o]*(model.C_pipe_unit_a*model.Dint_CC_return[j,o]+model.C_pipe_unit_b) for j in model.j for o in model.o)
+            return model.C_pipe == 1.e-6 * model.f_capex * (
+                sum(model.L_PC[i, j] *
+                    (model.C_pipe_unit_a * model.Dint_PC[i, j] + model.C_pipe_unit_b)
+                    for i in model.i for j in model.j) +
+                sum(model.L_CP[j, i] *
+                    (model.C_pipe_unit_a * model.Dint_CP[j, i] + model.C_pipe_unit_b)
+                    for j in model.j for i in model.i) +
+                sum(model.L_CC_parallel[j, o] *
+                    (model.C_pipe_unit_a * model.Dint_CC_parallel[j, o] + model.C_pipe_unit_b)
+                    for j in model.j for o in model.o) +
+                sum(model.L_CC_return[j, o] *
+                    (model.C_pipe_unit_a * model.Dint_CC_return[j, o] + model.C_pipe_unit_b)
+                    for j in model.j for o in model.o)
             )
         self.model.cout_canalisation_tuyau = pe.Constraint(rule=cout_canalisation_tuyau_rule)
 
@@ -1059,12 +1223,15 @@ class Model:
 
         # Longueur totale du réseau
         def Ex_L_tot_rule(model):
-            """Correspond à la somme de tous les tuyaux posés = 2 fois la longueur de tranchée car tuyau aller-retour"""
-            return model.L_tot == sum(model.L_PC[i,j] for i in model.i for j in model.j) +(
-                                sum(model.L_CP[j,i] for j in model.j for i in model.i)
-                                + sum(model.L_CC_parallel[j,o]  for j in model.j for o in model.o)
-                                + sum(model.L_CC_return[j,o]  for j in model.j for o in model.o)
-                                )
+            """Correspond à la somme de tous les tuyaux posés
+            soit 2 fois la longueur de tranchée car tuyau aller-retour
+            """
+            return model.L_tot == (
+                sum(model.L_PC[i, j] for i in model.i for j in model.j) +
+                sum(model.L_CP[j, i] for j in model.j for i in model.i) +
+                sum(model.L_CC_parallel[j, o] for j in model.j for o in model.o) +
+                sum(model.L_CC_return[j, o] for j in model.j for o in model.o)
+            )
         self.model.Ex_L_tot = pe.Constraint(rule=Ex_L_tot_rule)
 
         # Objective
