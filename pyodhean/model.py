@@ -19,12 +19,16 @@ class Model:
         self.def_consumption(consumption)
         self.def_problem(general_parameters)
 
-    def solve(self, options=None):
-        opt = po.SolverFactory('ipopt')
+    def solve(self, solver, options=None, **kwargs):
+        """Solve model
+
+        :param str solver: Solver to use (e.g. 'ipopt')
+        :param dict options: Solver options
+        :param dict kwargs: Kwargs passed to solver's solve method
+        """
+        opt = po.SolverFactory(solver)
         opt.set_options(options or {})
-        # [tee] affichage itérations
-        # [keepfiles] création des fichier .nl/.sol/.log
-        opt.solve(self.model, tee=True, keepfiles=False)
+        opt.solve(self.model, **kwargs)
 
     def write_solution(self, filename):
         with open(filename, 'w') as f:

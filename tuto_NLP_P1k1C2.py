@@ -125,7 +125,9 @@ model = Model(
 )
 
 print('### Solve ###\n')
-model.solve(options)
+# [tee] Display iterations (default: False)
+# [keepfiles] Keep .nl/.sol/.log files (default: False)
+model.solve('ipopt', options, tee=True, keepfiles=False)
 print('')
 
 print('### Display ###\n')
