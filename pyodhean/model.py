@@ -12,11 +12,12 @@ class Model:
     """PyODHEAN model class"""
 
     def __init__(
-            self, general_parameters, technologies, production, consumption):
+            self, general_parameters, technologies, production, consumption, configuration):
         self.model = pe.ConcreteModel()
         self.def_technologies(technologies)
         self.def_production(production)
         self.def_consumption(consumption)
+        self.def_configuration(configuration)
         self.def_problem(general_parameters)
 
     def solve(self, solver, options=None, **kwargs):
@@ -99,6 +100,33 @@ class Model:
         self.model.T_req_in = pe.Param(
             self.model.j, initialize=pluck(consumption, 'T_req_in'),
             doc='température retour reseau secondaire du consommateur (°C)')
+
+    def def_configuration(self, configuration):
+        self.model.Y_P = pe.Param(
+            self.model.i, self.model.k, initialize=configuration['technos_per_prod'],
+            doc='Existence techno k au lieu de production Pi')
+
+        table_Y_linePC = configuration['prod_cons_pipes']
+        table_Y_lineCP = {
+            (c, p): e for (p, c), e in table_Y_linePC.items()
+        }
+        self.model.Y_linePC = pe.Param(
+            self.model.i, self.model.j, initialize=table_Y_linePC,
+            doc='Existence canalisation PC')
+        self.model.Y_lineCP = pe.Param(
+            self.model.j, self.model.i, initialize=table_Y_lineCP,
+            doc='Existence canalisation CP')
+
+        table_Y_lineCC_parallel = configuration['cons_cons_pipes']
+        table_Y_lineCC_return = {
+            (c2, c1): e for (c1, c2), e in table_Y_lineCC_parallel.items()
+        }
+        self.model.Y_lineCC_parallel = pe.Param(
+            self.model.j, self.model.o, initialize=table_Y_lineCC_parallel,
+            doc='Existence canalisation CC aller')
+        self.model.Y_lineCC_return = pe.Param(
+            self.model.o, self.model.j, initialize=table_Y_lineCC_return,
+            doc='Existence canalisation CC retour')
 
     def def_problem(self, general_parameters):
 
@@ -210,55 +238,6 @@ class Model:
         self.model.Dist_max_autorisee = pe.Param(
             initialize=general_parameters['Dist_max_autorisee'],
             doc='distance max pour borner les longueurs de canalisations (m)')
-
-        # Quelle technologie associée à chaque production ?
-        table_Y_P = {
-            ('P1', 'k1'): 1,
-        }
-        self.model.Y_P = pe.Param(
-            self.model.i, self.model.k, initialize=table_Y_P,
-            doc='Existence techno k au lieu de production Pi')
-
-        # Initialisation des canalisations entre producteurs et consommateurs
-        table_Y_linePC = {
-            ('P1', 'C1'): 1,
-            ('P1', 'C2'): 0,
-        }
-        self.model.Y_linePC = pe.Param(
-            self.model.i, self.model.j, initialize=table_Y_linePC,
-            doc='Existence canalisation PC')
-
-        # Initialisation des canalisations entre consommateurs et producteurs
-        table_Y_lineCP = {
-            ('C1', 'P1'): 1,
-            ('C2', 'P1'): 0,
-        }
-        self.model.Y_lineCP = pe.Param(
-            self.model.j, self.model.i, initialize=table_Y_lineCP,
-            doc='Existence canalisation CP')
-
-        # Initialisation des canalisations entre consommateurs
-        # Aller
-        table_Y_lineCC_parallel = {
-            ('C1', 'C1'): 0,
-            ('C1', 'C2'): 1,
-            ('C2', 'C1'): 0,
-            ('C2', 'C2'): 0,
-        }
-        self.model.Y_lineCC_parallel = pe.Param(
-            self.model.j, self.model.o, initialize=table_Y_lineCC_parallel,
-            doc='Existence canalisation CC parallel')
-
-        # Retour
-        table_Y_lineCC_return = {
-            ('C1', 'C1'): 0,
-            ('C1', 'C2'): 0,
-            ('C2', 'C1'): 1,
-            ('C2', 'C2'): 0,
-        }
-        self.model.Y_lineCC_return = pe.Param(
-            self.model.o, self.model.j, initialize=table_Y_lineCC_return,
-            doc='Existence canalisation CC return')
 
         # Valeur calculée
 

@@ -117,11 +117,28 @@ consumption = {
     },
 }
 
+configuration = {
+    'technos_per_prod': {
+        ('P1', 'k1'): 1,
+    },
+    'prod_cons_pipes': {
+        ('P1', 'C1'): 1,
+        ('P1', 'C2'): 0,
+    },
+    'cons_cons_pipes': {
+        ('C1', 'C1'): 0,
+        ('C1', 'C2'): 1,
+        ('C2', 'C1'): 0,
+        ('C2', 'C2'): 0,
+    },
+}
+
 model = Model(
     general_parameters=general_parameters,
     technologies=technologies,
     production=production,
     consumption=consumption,
+    configuration=configuration,
 )
 
 print('### Solve ###\n')
