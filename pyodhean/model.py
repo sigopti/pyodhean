@@ -859,10 +859,10 @@ class Model:
             Un consommateur (M_supply) peut être alimenté par un producteur (M_linePC)
             ou un autre consommateur (M_lineCC_parallel).
             """
-            return (
+            return model.M_supply[j] == (
                 sum(model.M_linePC[i, j] for i in model.i) +
                 sum(model.M_lineCC_parallel[o, j] for o in model.o if o != j)
-            ) == model.M_supply[j]
+            )
         self.model.bilanA_debit_supply = pe.Constraint(self.model.j, rule=bilanA_debit_supply_rule)
 
         def bilanB_debit_hx_in_rule(model, j):
@@ -884,10 +884,10 @@ class Model:
             autres consommateurs (M_lineCC_return),
             sauf s'il est en fin de réseau et dans ce cas M_return = M_hx
             """
-            return (
+            return self.model.M_return[j] == (
                 self.model.M_hx[j] +
                 sum(self.model.M_lineCC_return[o, j] for o in self.model.o if o != j)
-            ) == self.model.M_return[j]
+            )
         self.model.bilanD_debit_hx_out = pe.Constraint(self.model.j, rule=bilanD_debit_hx_out_rule)
 
         def bilanE_debit_return_rule(model, j):
@@ -906,7 +906,7 @@ class Model:
             La débit de retour à la production (M_prod_tot) est égal
             au débit de retour du ou des derniers consommateurs par branche (M_lineCP)
             """
-            return sum(model.M_lineCP[j, i] for j in model.j) == model.M_prod_tot[i]
+            return model.M_prod_tot[i] == sum(model.M_lineCP[j, i] for j in model.j)
         self.model.bilanF_debit_prod_tot_in = pe.Constraint(
             self.model.i, rule=bilanF_debit_prod_tot_in_rule)
 
@@ -962,11 +962,11 @@ class Model:
 
         def bilanD_H_hx_out_rule(model, j):
             """Bilan d'énergie au point D d'un noeud consommateur car point convergeant"""
-            return (
+            return model.M_return[j] * model.T_return[j] == (
                 model.M_hx[j] * model.T_hx_out[j] +
                 sum(model.M_lineCC_return[o, j] * model.T_lineCC_return_out[o, j]
                     for o in model.o if o != j)
-            ) == model.M_return[j] * model.T_return[j]
+            )
         self.model.bilanD_H_hx_out = pe.Constraint(self.model.j, rule=bilanD_H_hx_out_rule)
 
         def bilanE_T_return_rule_bigM(model, i, j):
@@ -999,9 +999,9 @@ class Model:
 
         def bilanF_H_prod_tot_in_rule(model, i):
             """Bilan d'énergie au point F d'un noeud producteur car point convergeant"""
-            return (
+            return model.M_prod_tot[i] * model.T_prod_tot_in[i] == (
                 sum(model.M_lineCP[j, i] * model.T_lineCP_out[j, i] for j in model.j)
-            ) == model.M_prod_tot[i] * model.T_prod_tot_in[i]
+            )
         self.model.bilanF_H_prod_tot_in = pe.Constraint(
             self.model.i, rule=bilanF_H_prod_tot_in_rule)
 
@@ -1022,9 +1022,9 @@ class Model:
             """Bilan d'énergie au point H d'un noeud producteur car point convergeant
             Mélange des fluides provenant des technologies k à la production i
             """
-            return (
+            return model.M_prod_tot[i] * model.T_prod_tot_out[i] == (
                 sum(model.M_prod[i, k] * model.T_prod_out[i, k] for k in model.k)
-            ) == model.M_prod_tot[i] * model.T_prod_tot_out[i]
+            )
         self.model.bilanH_H_prod_out = pe.Constraint(
             self.model.i, rule=bilanH_H_prod_out_rule)
 
