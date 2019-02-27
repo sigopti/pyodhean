@@ -262,31 +262,43 @@ class Model:
             toutes les distances existent,
             que les producteurs-consommateurs soient reliés ou non après optimisation"""
             return ((model.x_C[j] - model.x_P[i])**2 + (model.z_C[j] - model.z_P[i])**2)**0.5
-        self.model.Dist_PC = pe.Param(self.model.i,self.model.j,initialize=calcul_DistPC)
+        self.model.Dist_PC = pe.Param(self.model.i, self.model.j, initialize=calcul_DistPC)
 
         def calcul_DistCC(model, j, o):
-            """calcul des distances Euclidiennes (à vol d'oiseau) entre consommateurs,
-            revient à écrire une matrice de dimension j x o contenant les distances donc les termes de la
-            diagonale valent 0: on ne calcule pas une distance d'un consommateurs à lui même,
-            toutes les distances existent, que les producteurs-consommateurs soient reliés ou non après optimisation"""
-            if j != o:
-                return ((model.x_C[j] - model.x_C[o])**2 + (model.z_C[j] - model.z_C[o])**2)**0.5
-            else:
+            """calcul des distances Euclidiennes (à vol d'oiseau) entre consommateurs
+
+            Revient à écrire une matrice de dimension j x o contenant les distances
+            donc les termes de la diagonale valent 0: on ne calcule pas une distance
+            d'un consommateurs à lui même/
+            Toutes les distances existent, que les producteurs-consommateurs soient
+            reliés ou non après optimisation.
+            """
+            if j == o:
                 return 0
+            return ((model.x_C[j] - model.x_C[o])**2 + (model.z_C[j] - model.z_C[o])**2)**0.5
         self.model.Dist_CC = pe.Param(self.model.j, self.model.o, initialize=calcul_DistCC)
 
         self.model.Dist_bigM = pe.Param(initialize=self.model.Dist_max_autorisee)
 
         def calcul_f_opex(model, k):
-            """facteur multiplicateur des coûts operationnels permettant de tenir compte de la somme
-             des dépenses annuelles actualisé et suivant l'inflation de l'energie et ce par technologie
-             de production (électricité/gaz/biomasse/UIOM...)"""
-            return (1 - (1 + model.rate_a)**model.depreciation_period * (1 + model.rate_i[k])**model.depreciation_period) / (1 - (1 + model.rate_a) * (1 + model.rate_i[k]))
+            """Facteur multiplicateur des coûts operationnels permettant de tenir compte de la somme
+             des dépenses annuelles actualisés et suivant l'inflation de l'energie et ce par
+             technologie de production (électricité/gaz/biomasse/UIOM...)
+             """
+            dep = model.depreciation_period
+            return (
+                (1 - (1 + model.rate_a)**dep * (1 + model.rate_i[k])**dep) /
+                (1 - (1 + model.rate_a) * (1 + model.rate_i[k]))
+            )
         self.model.f_opex = pe.Param(self.model.k, initialize=calcul_f_opex)
 
         def calcul_f_opex_pump(model):
             """idem pour la pompe, alimentée en électricité"""
-            return (1 - (1 + model.rate_a)**model.depreciation_period * (1 + model.rate_i_pump)**model.depreciation_period) / (1 - (1 + model.rate_a) * (1 + model.rate_i_pump))
+            dep = model.depreciation_period
+            return (
+                (1 - (1 + model.rate_a)**dep * (1 + model.rate_i_pump)**dep) /
+                (1 - (1 + model.rate_a) * (1 + model.rate_i_pump))
+            )
         self.model.f_opex_pump = pe.Param(initialize=calcul_f_opex_pump)
 
         def calcul_f_capex(model):
