@@ -649,9 +649,6 @@ class Model:
         self.model.H_inst = pe.Var(
             self.model.i, self.model.k, initialize=0, bounds=(0, self.model.H_inst_max),
             doc='Puissance installée à la production i pour la technologie k (kW)')
-#         self.model.H_hx = pe.Var(
-#             self.model.j, bounds=(0, 80,),
-#             doc="Puissance nominale de l'échangeur du consommateur j")
 
         def H_hx_borne(model, j):
             return (0, model.H_req[j])
@@ -1149,6 +1146,8 @@ class Model:
             return model.H_hx[j] == model.H_req[j]
         self.model.contrainte_appro = pe.Constraint(self.model.j, rule=contrainte_appro_rule)
 
+        # Objective
+
         # Termes de la fonction coût
         def cout_pompage_rule(model):
             """Coût de pompage"""
@@ -1228,8 +1227,6 @@ class Model:
                 sum(model.L_CC_return[j, o] for j in model.j for o in model.o)
             )
         self.model.Ex_L_tot = pe.Constraint(rule=Ex_L_tot_rule)
-
-        # Objective
 
         def objective_rule(model):
             """Sommes des termes coût"""
