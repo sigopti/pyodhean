@@ -191,7 +191,7 @@ class Model:
             doc="ordonnee à l'origine du coût unitaire de l'echangeur (€)")
         self.model.rate_a = pe.Param(
             initialize=general_parameters['rate_a'],
-            doc="taux d'actualisation pour le calcul de l\'annuite des investissements initiaux")
+            doc="taux d'actualisation pour le calcul de l'annuite des investissements initiaux")
         self.model.T_ext = pe.Param(
             initialize=general_parameters['T_ext'],
             doc='température extérieure pour le calcul des pertes thermiques de la canalisation')
@@ -527,7 +527,7 @@ class Model:
             self.model.j,
             initialize=self.model.M_min,
             bounds=(self.model.M_min, self.model.M_max),
-            doc="debit après l\'changeur au noeud C(j); différent de M_hx seulement si cascade (kg/s)")
+            doc="debit après l'échangeur au noeud C(j); différent de M_hx seulement si cascade (kg/s)")
 
         # Températures
         self.model.T_prod_in = pe.Var(
@@ -651,7 +651,7 @@ class Model:
             doc='Puissance installée à la production i pour la technologie k (kW)')
 #         self.model.H_hx = pe.Var(
 #             self.model.j, bounds=(0, 80,),
-#             doc='Puissance nominale de l\'échangeur du consommateur j')
+#             doc="Puissance nominale de l'échangeur du consommateur j")
 
         def H_hx_borne(model, j):
             return (0, model.H_req[j])
@@ -668,10 +668,10 @@ class Model:
             doc='Coût de la chaleur à produire (€)')
         self.model.C_Hinst = pe.Var(
             initialize=0, bounds=(0, None),
-            doc='Coût d\'installation de la puissance à la production (€)')
+            doc="Coût d'installation de la puissance à la production (€)")
         self.model.C_hx = pe.Var(
             initialize=0, bounds=(0, None),
-            doc='Coût d\'installation des échangeurs en sous-station (€)')
+            doc="Coût d'installation des échangeurs en sous-station (€)")
         self.model.C_line_tot = pe.Var(
             initialize=0, bounds=(0, None),
             doc='Coût total de la canalisation = tranchée + tuyau pré-isolé (€) ')
