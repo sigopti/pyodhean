@@ -5,6 +5,7 @@ from math import pi
 import pyomo.environ as pe
 import pyomo.opt as po
 
+from .defaults import DEFAULT_PARAMETERS
 from .utils import pluck
 
 
@@ -12,13 +13,13 @@ class Model:
     """PyODHEAN model class"""
 
     def __init__(
-            self, general_parameters, technologies, production, consumption, configuration):
+            self, technologies, production, consumption, configuration, general_parameters=None):
         self.model = pe.ConcreteModel()
         self.def_technologies(technologies)
         self.def_production(production)
         self.def_consumption(consumption)
         self.def_configuration(configuration)
-        self.def_problem(general_parameters)
+        self.def_problem({**DEFAULT_PARAMETERS, **(general_parameters or {})})
 
     def solve(self, solver, options=None, **kwargs):
         """Solve model
