@@ -99,18 +99,16 @@ technologies = {
 }
 
 production = {
-    'P1': {'x': 0, 'y': 0},
+    'P1': {},
 }
 
 consumption = {
     'C1': {
-        'x': 60, 'y': 40,
         'H_req': 80,
         'T_req_out': 60,
         'T_req_in': 80,
     },
     'C2': {
-        'x': 0, 'y': 40,
         'H_req': 80,
         'T_req_out': 60,
         'T_req_in': 80,

@@ -71,12 +71,6 @@ class Model:
         self.model.i = pe.Set(
             initialize=production.keys(),
             doc='indice des noeuds producteurs')
-        self.model.x_P = pe.Param(
-            self.model.i, initialize=pluck(production, 'x'),
-            doc="abscisse d'un noeud producteur (m)")
-        self.model.z_P = pe.Param(
-            self.model.i, initialize=pluck(production, 'y'),
-            doc="ordonnée d'un noeud producteur (m)")
 
     def def_consumption(self, consumption):
         self.model.j = pe.Set(
@@ -85,12 +79,6 @@ class Model:
         self.model.o = pe.Set(
             initialize=consumption.keys(),
             doc='indice des noeuds consommateurs')
-        self.model.x_C = pe.Param(
-            self.model.j, initialize=pluck(consumption, 'x'),
-            doc="abscisse d'un noeud consommateur (m)")
-        self.model.z_C = pe.Param(
-            self.model.j, initialize=pluck(consumption, 'y'),
-            doc="ordonnée d'un noeud consommateur (m)")
         self.model.H_req = pe.Param(
             self.model.j, initialize=pluck(consumption, 'H_req'),
             doc='besoin de chaleur (kW)')
@@ -255,30 +243,6 @@ class Model:
             pour en déduire la puissance de pompage et son coût"""
             return 100 / 70 * ((100 / model.mu)**(-0.25)) / (2 * (model.rho**0.75))
         self.model.gamma = pe.Param(initialize=calcul_gamma)
-
-        def calcul_DistPC(model, i, j):
-            """calcul des distances Euclidiennes (à vol d'oiseau) entre chaque producteurs et consommateurs,
-            revient à écrire une matrice de dimension i x j contenant les distances,
-            toutes les distances existent,
-            que les producteurs-consommateurs soient reliés ou non après optimisation"""
-            return ((model.x_C[j] - model.x_P[i])**2 + (model.z_C[j] - model.z_P[i])**2)**0.5
-        self.model.Dist_PC = pe.Param(self.model.i, self.model.j, initialize=calcul_DistPC)
-
-        def calcul_DistCC(model, j, o):
-            """calcul des distances Euclidiennes (à vol d'oiseau) entre consommateurs
-
-            Revient à écrire une matrice de dimension j x o contenant les distances
-            donc les termes de la diagonale valent 0: on ne calcule pas une distance
-            d'un consommateurs à lui même/
-            Toutes les distances existent, que les producteurs-consommateurs soient
-            reliés ou non après optimisation.
-            """
-            if j == o:
-                return 0
-            return ((model.x_C[j] - model.x_C[o])**2 + (model.z_C[j] - model.z_C[o])**2)**0.5
-        self.model.Dist_CC = pe.Param(self.model.j, self.model.o, initialize=calcul_DistCC)
-
-        self.model.Dist_bigM = pe.Param(initialize=self.model.Dist_max_autorisee)
 
         def calcul_f_opex(model, k):
             """Facteur multiplicateur des coûts operationnels permettant de tenir compte de la somme
