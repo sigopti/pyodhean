@@ -94,7 +94,11 @@ class Model:
             self.model.i, self.model.k, initialize=configuration['technos_per_prod'],
             doc='Existence techno k au lieu de production Pi')
 
-        table_Y_linePC = configuration['prod_cons_pipes']
+        table_Y_linePC = {
+            (c, p): 1 if e else 0
+            for (c, p), e in configuration['prod_cons_pipes'].items()
+        }
+
         table_Y_lineCP = {
             (c, p): e for (p, c), e in table_Y_linePC.items()
         }
@@ -105,7 +109,10 @@ class Model:
             self.model.j, self.model.i, initialize=table_Y_lineCP,
             doc='Existence canalisation CP')
 
-        table_Y_lineCC_parallel = configuration['cons_cons_pipes']
+        table_Y_lineCC_parallel = {
+            (c, p): 1 if e else 0
+            for (c, p), e in configuration['cons_cons_pipes'].items()
+        }
         table_Y_lineCC_return = {
             (c2, c1): e for (c1, c2), e in table_Y_lineCC_parallel.items()
         }
@@ -115,6 +122,30 @@ class Model:
         self.model.Y_lineCC_return = pe.Param(
             self.model.o, self.model.j, initialize=table_Y_lineCC_return,
             doc='Existence canalisation CC retour')
+
+        # Distances
+        self.model.L_PC = pe.Param(
+            self.model.i, self.model.j,
+            initialize=configuration['prod_cons_pipes'],
+            doc='matrice des longueurs de canalisations')
+
+        self.model.L_CP = pe.Param(
+            self.model.j, self.model.i,
+            initialize={
+                (c, p): e
+                for (p, c), e in configuration['prod_cons_pipes'].items()},
+            doc='matrice des longueurs de canalisations')
+
+        self.model.L_CC_parallel = pe.Param(
+            self.model.j, self.model.o,
+            initialize=configuration['cons_cons_pipes'],
+            doc='matrice des longueurs de canalisations')
+
+        self.model.L_CC_return = pe.Param(
+            self.model.o, self.model.j, initialize={
+                (c, p): e
+                for (p, c), e in configuration['cons_cons_pipes'].items()},
+            doc='matrice des longueurs de canalisations')
 
     def def_problem(self, general_parameters):
 
@@ -346,43 +377,6 @@ class Model:
         T_init_max = max(
             T_prod_out_max, max(self.model.T_req_out[j] for j in self.model.j))
         self.model.T_init_max = pe.Param(initialize=T_init_max)
-
-        # Distances
-        table_L_PC = {
-            ('P1', 'C1'): 10,
-            ('P1', 'C2'): 0,
-        }
-        self.model.L_PC = pe.Param(
-            self.model.i, self.model.j, initialize=table_L_PC,
-            doc='matrice des longueurs de canalisations')
-
-        table_L_CP = {
-            ('C1', 'P1'): 10,
-            ('C2', 'P1'): 0,
-        }
-        self.model.L_CP = pe.Param(
-            self.model.j, self.model.i, initialize=table_L_CP,
-            doc='matrice des longueurs de canalisations')
-
-        table_L_CC_parallel = {
-            ('C1', 'C1'): 0,
-            ('C1', 'C2'): 100,
-            ('C2', 'C1'): 0,
-            ('C2', 'C2'): 0,
-        }
-        self.model.L_CC_parallel = pe.Param(
-            self.model.j, self.model.o, initialize=table_L_CC_parallel,
-            doc='matrice des longueurs de canalisations')
-
-        table_L_CC_return = {
-            ('C1', 'C1'): 0,
-            ('C1', 'C2'): 0,
-            ('C2', 'C1'): 100,
-            ('C2', 'C2'): 0,
-        }
-        self.model.L_CC_return = pe.Param(
-            self.model.o, self.model.j, initialize=table_L_CC_return,
-            doc='matrice des longueurs de canalisations')
 
         # Variables
 
