@@ -13,6 +13,11 @@ class Model:
     """PyODHEAN model class"""
 
     def __init__(self, production, consumption, configuration, general_parameters=None):
+        # Store inputs
+        self.production = production
+        self.consumption = consumption
+        self.configuration = configuration
+        # Create model
         self.model = pe.ConcreteModel()
         self.def_production(production)
         self.def_consumption(consumption)
@@ -29,6 +34,136 @@ class Model:
         opt = po.SolverFactory(solver)
         opt.set_options(options or {})
         opt.solve(self.model, **kwargs)
+
+    def get_solution(self):
+
+        # Production
+        prod_mapping = {
+            'flow_rate': 'M_prod_tot',
+            'supply_temperature': 'T_prod_tot_in',
+            'return_temperature': 'T_prod_tot_out',
+            'pump_pressure': 'P_pump',
+        }
+        prod_techno_mapping = {
+            'flow_rate': 'M_prod',
+            'supply_temperature': 'T_prod_in',
+            'return_temperature': 'T_prod_out',
+            'power': 'H_inst',
+        }
+        production = {
+            prod_id: {
+                **{
+                    k: pe.value(getattr(self.model, v)[prod_id])
+                    for k, v in prod_mapping.items()
+                },
+                'technologies': {
+                    techno_id: {
+                        k: pe.value(getattr(self.model, v)[(prod_id, techno_id)])
+                        for k, v in prod_techno_mapping.items()
+                    }
+                    for techno_id in prod['technologies']
+                }
+            }
+            for prod_id, prod in self.production.items()
+        }
+
+        # Consumption
+        cons_mapping = {
+            'flow_rate_in_exchanger': 'M_hx',
+            'flow_rate_before_exchanger': 'M_supply',
+            'flow_rate_after_exchanger': 'M_return',
+            'exchanger_input_temperature': 'T_hx_in',
+            'exchanger_output_temperature': 'T_hx_out',
+            'exchanger_supply_temperature': 'T_supply',
+            'exchanger_return_temperature': 'T_return',
+            'exchanger_DTLM': 'DTLM',
+            'exchanger_delta_t_hot': 'DT1',
+            'exchanger_delta_t_cold': 'DT2',
+            'exchanger_surface': 'A_hx',
+            'exchanger_power': 'H_hx',
+        }
+        consumption = {
+            cons_id: {
+                k: pe.value(getattr(self.model, v)[cons_id])
+                for k, v in cons_mapping.items()
+            }
+            for cons_id, cons in self.consumption.items()
+        }
+
+        # Pipes
+        # Supply is indexed as CC_parallel[src, target]
+        # Return is indexed as CC_return[src, target]
+        cons_cons_mapping = {
+            'speed': 'V_lineCC_parallel',
+            'diameter_int': 'Dint_CC_parallel',
+            'diameter_out': 'Dout_CC_parallel',
+            'flow_rate': 'M_lineCC_parallel',
+            'supply_in': 'T_lineCC_parallel_in',
+            'supply_out': 'T_lineCC_parallel_out',
+            'return_in': 'T_lineCC_return_in',
+            'return_out': 'T_lineCC_return_out',
+        }
+        cons_cons_pipes = {
+            ccp: {
+                k: pe.value(getattr(self.model, v)[ccp])
+                for k, v in cons_cons_mapping.items()
+            }
+            for ccp, length in self.configuration['cons_cons_pipes'].items()
+            if length
+        }
+        # Supply is indexed as PC[src, target]
+        # Return is indexed as CP[target, src]
+        prod_cons_mapping_PC = {
+            'speed': 'V_linePC',
+            'diameter_int': 'Dint_PC',
+            'diameter_out': 'Dout_PC',
+            'flow_rate': 'M_linePC',
+            'supply_in': 'T_linePC_in',
+            'supply_out': 'T_linePC_out',
+        }
+        prod_cons_mapping_CP = {
+            'return_in': 'T_lineCP_in',
+            'return_out': 'T_lineCP_out',
+        }
+        prod_cons_pipes = {
+            pcp: {
+                **{
+                    k: pe.value(getattr(self.model, v)[pcp])
+                    for k, v in prod_cons_mapping_PC.items()
+                },
+                **{
+                    k: pe.value(getattr(self.model, v)[(pcp[1], pcp[0])])
+                    for k, v in prod_cons_mapping_CP.items()
+                }
+            }
+            for pcp, length in self.configuration['prod_cons_pipes'].items()
+            if length
+        }
+
+        # Global indicators
+        globals_mapping = {
+            'Pumps operation cost': 'C_pump',
+            'Heat production cost': 'C_heat',
+            'Production intallation cost': 'C_Hinst',
+            'Exchangers installation cost': 'C_hx',
+            'Network cost (pipes + trenches)': 'C_line_tot',
+            'Pipes cost': 'C_pipe',
+            'Trenches cost': 'C_tr',
+            'Network length (supply + return)': 'L_tot',
+        }
+        global_indicators = {
+            k: pe.value(getattr(self.model, v))
+            for k, v in globals_mapping.items()
+        }
+
+        configuration = {
+            'production': production,
+            'consumption': consumption,
+            'prod_cons_pipes': prod_cons_pipes,
+            'cons_cons_pipes': cons_cons_pipes,
+            'global_indicators': global_indicators,
+        }
+        return configuration
 
     def write_solution(self, filename):
         with open(filename, 'w') as f:
@@ -601,7 +736,8 @@ class Model:
             return model.H_req[j] / (model.K_hx * T_prod_out_max)
         self.model.A_hx = pe.Var(
             self.model.j, initialize=A_hx_init, bounds=A_hx_borne,
-            doc="surface de l'échangeur pour chaque consommateur j, bornée par le pincement T_hx_pinch ==> cf calcul de A_hx_borne")
+            doc="Surface de l'échangeur pour chaque consommateur j, bornée par le pincement "
+            "T_hx_pinch ==> cf calcul de A_hx_borne")
 
         # Pressions pour le coût_pompage
         self.model.P_pump = pe.Var(
