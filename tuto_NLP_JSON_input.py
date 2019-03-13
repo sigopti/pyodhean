@@ -1,3 +1,5 @@
+from pprint import pprint
+
 from pyodhean.model import Model
 
 
@@ -20,26 +22,29 @@ options = {
 
 
 json_input = {
-    "nodes": [
+    'nodes': [
         # P1
-        {"id": [0, 0], "Dist_to_source": 0, "kWh": 0, "tot_kWh": 15467900,
-            "Type": "Source"},
+        {'id': [0, 0], 'Dist_to_source': 0, 'kWh': 0, 'tot_kWh': 15467900, 'Type': 'Source'},
         # C1
-        {"id": [2, 5], "Dist_to_source": 10, "kWh": 5382100.0, "tot_kWh": 15467900},
+        {'id': [2, 5], 'Dist_to_source': 10, 'kWh': 5382100.0, 'tot_kWh': 15467900},
         # C2
-        {"id": [30, 50], "Dist_to_source": 110, "kWh": 0, "tot_kWh": 10085800}
+        {'id': [30, 50], 'Dist_to_source': 110, 'kWh': 0, 'tot_kWh': 10085800}
     ],
     'links': [
         # P1 -> C1
-        {"Length": 10, "source": [0, 0], "target": [2, 5]},
+        {'Length': 10, 'source': [0, 0], 'target': [2, 5]},
         # C1 -> C2
-        {"Length": 100, "source": [2, 5], "target": [30, 50]},
+        {'Length': 100, 'source': [2, 5], 'target': [30, 50]},
     ]
 }
 
 
 def id2str(coords):
     return ('{x}_{y}'.format(x=coords[0], y=coords[1]))
+
+
+def str2id(coords):
+    return [int(v) for v in coords.split('_')]
 
 
 # Production / consumption nodes
@@ -103,13 +108,45 @@ model = Model(
     configuration=configuration,
 )
 
-print('### Solve ###\n')
 # [tee] Display iterations (default: False)
 # [keepfiles] Keep .nl/.sol/.log files (default: False)
-model.solve('ipopt', options, tee=True, keepfiles=False)
-print('')
+result = model.solve('ipopt', options, tee=False, keepfiles=False)
 
-print('### Display ###\n')
-#model.display()
+# Parse output
 
-model.write_solution('./solution.txt')
+configuration_out = model.get_solution()
+
+nodes = [
+    {
+        'id': str2id(prod_id),
+        'Type': 'Source',
+        **values
+    }
+    for prod_id, values in configuration_out['production'].items()
+] + [
+    {
+        'id': str2id(cons_id),
+        **values
+    }
+    for cons_id, values in configuration_out['consumption'].items()
+]
+
+links = [
+    {
+        'source': str2id(src),
+        'target': str2id(trg),
+        **values
+    }
+    for (src, trg), values in {
+        **configuration_out['prod_cons_pipes'],
+        **configuration_out['cons_cons_pipes'],
+    }.items()
+]
+
+json_output = {
+    'nodes': nodes,
+    'links': links,
+    'global_indicators': configuration_out['global_indicators'],
+}
+
+pprint(json_output)
