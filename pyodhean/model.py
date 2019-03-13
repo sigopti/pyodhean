@@ -12,10 +12,8 @@ from .utils import pluck
 class Model:
     """PyODHEAN model class"""
 
-    def __init__(
-            self, technologies, production, consumption, configuration, general_parameters=None):
+    def __init__(self, production, consumption, configuration, general_parameters=None):
         self.model = pe.ConcreteModel()
-        self.def_technologies(technologies)
         self.def_production(production)
         self.def_consumption(consumption)
         self.def_configuration(configuration)
@@ -45,7 +43,18 @@ class Model:
     def display(self):
         self.model.display()
 
-    def def_technologies(self, technologies):
+    def def_production(self, production):
+        technologies = {}
+        technos_per_prod = {}
+        for prod_id, prod in production.items():
+            technos = prod['technologies']
+            technologies.update(technos)
+            for techno in technos:
+                technos_per_prod[(prod_id, techno)] = 1
+
+        self.model.i = pe.Set(
+            initialize=production.keys(),
+            doc='indice des noeuds producteurs')
         self.model.k = pe.Set(
             initialize=technologies.keys(),
             doc='indice technologie de production')
@@ -54,7 +63,8 @@ class Model:
             doc='coût unitaire  de la chaudiere installée (€/kW)')
         self.model.C_heat_unit = pe.Param(
             self.model.k, initialize=pluck(technologies, 'C_heat_unit'),
-            doc="coût unitaire de la chaleur suivant l'énergie de la technologie employee et la periode selon inflation (€/kWh)")
+            doc="coût unitaire de la chaleur suivant l'énergie de la technologie employee "
+                "et la periode selon inflation (€/kWh)")
         self.model.Eff = pe.Param(
             self.model.k, initialize=pluck(technologies, 'Eff'),
             doc='rendement de la technologie k (%)')
@@ -67,11 +77,9 @@ class Model:
         self.model.T_prod_in_min = pe.Param(
             self.model.k, initialize=pluck(technologies, 'T_prod_in_min'),
             doc='température min autorisée en entree de chaudiere de la techno k (°C)')
-
-    def def_production(self, production):
-        self.model.i = pe.Set(
-            initialize=production.keys(),
-            doc='indice des noeuds producteurs')
+        self.model.Y_P = pe.Param(
+            self.model.i, self.model.k, initialize=technos_per_prod,
+            doc='Existence techno k au lieu de production Pi')
 
     def def_consumption(self, consumption):
         self.model.j = pe.Set(
@@ -91,10 +99,6 @@ class Model:
             doc='température retour reseau secondaire du consommateur (°C)')
 
     def def_configuration(self, configuration):
-        self.model.Y_P = pe.Param(
-            self.model.i, self.model.k, initialize=configuration['technos_per_prod'],
-            doc='Existence techno k au lieu de production Pi')
-
         table_Y_linePC = {
             (c, p): 1 if e else 0
             for (c, p), e in configuration['prod_cons_pipes'].items()

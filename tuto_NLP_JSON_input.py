@@ -42,28 +42,25 @@ def id2str(coords):
     return ('{x}_{y}'.format(x=coords[0], y=coords[1]))
 
 
-# Technologies
-
-# TODO: Get that from JSON
-technologies = {
-    'k1': {
-        'C_Hprod_unit': 800,
-        'C_heat_unit': 0.08,
-        'Eff': 0.9,
-        'rate_i': 0.04,
-        'T_prod_out_max': 100,
-        'T_prod_in_min': 30,
-    },
-}
-
-
 # Production / consumption nodes
 
 production = {}
 consumption = {}
 for node in json_input['nodes']:
     if node.get('Type') == 'Source':
-        production[id2str(node['id'])] = {}
+        production[id2str(node['id'])] = {
+            # TODO: Get that from JSON
+            'technologies': {
+                'k1': {
+                    'C_Hprod_unit': 800,
+                    'C_heat_unit': 0.08,
+                    'Eff': 0.9,
+                    'rate_i': 0.04,
+                    'T_prod_out_max': 100,
+                    'T_prod_in_min': 30,
+                },
+            },
+        }
     else:
         consumption[id2str(node['id'])] = {
             # TODO: Get that from JSON
@@ -74,11 +71,6 @@ for node in json_input['nodes']:
 
 
 # Configuration
-
-# TODO: Get that from JSON
-technos_per_prod = {
-    ('0_0', 'k1'): 1,
-}
 
 prod_cons_pipes = {}
 cons_cons_pipes = {}
@@ -98,7 +90,6 @@ for cons in consumption:
         cons_cons_pipes.setdefault((cons, other_cons), 0)
 
 configuration = {
-    'technos_per_prod': technos_per_prod,
     'prod_cons_pipes': prod_cons_pipes,
     'cons_cons_pipes': cons_cons_pipes,
 }
@@ -107,7 +98,6 @@ configuration = {
 # Instantiate Model and solve
 
 model = Model(
-    technologies=technologies,
     production=production,
     consumption=consumption,
     configuration=configuration,

@@ -18,19 +18,20 @@ options = {
     # 'diverging_iterates_tol':,           # defaut = 1e+20
 }
 
-technologies = {
-    'k1': {
-        'C_Hprod_unit': 800,
-        'C_heat_unit': 0.08,
-        'Eff': 0.9,
-        'rate_i': 0.04,
-        'T_prod_out_max': 100,
-        'T_prod_in_min': 30,
-    },
-}
 
 production = {
-    'P1': {},
+    'P1': {
+        'technologies': {
+            'k1': {
+                'C_Hprod_unit': 800,
+                'C_heat_unit': 0.08,
+                'Eff': 0.9,
+                'rate_i': 0.04,
+                'T_prod_out_max': 100,
+                'T_prod_in_min': 30,
+            },
+        },
+    },
 }
 
 consumption = {
@@ -47,9 +48,6 @@ consumption = {
 }
 
 configuration = {
-    'technos_per_prod': {
-        ('P1', 'k1'): 1,
-    },
     'prod_cons_pipes': {
         ('P1', 'C1'): 10,
         ('P1', 'C2'): 0,
@@ -63,7 +61,6 @@ configuration = {
 }
 
 model = Model(
-    technologies=technologies,
     production=production,
     consumption=consumption,
     configuration=configuration,
