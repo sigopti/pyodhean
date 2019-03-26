@@ -73,7 +73,9 @@ class Model:
                 },
                 'technologies': {
                     techno_id: {
-                        k: pe.value(getattr(self.model, v)[(prod_id, techno_id)])
+                        k: pe.value(getattr(self.model, v)[
+                            (prod_id, '{}/{}'.format(prod_id, techno_id))
+                        ])
                         for k, v in prod_techno_mapping.items()
                     }
                     for techno_id in prod['technologies']
@@ -198,9 +200,11 @@ class Model:
         technos_per_prod = {}
         for prod_id, prod in production.items():
             technos = prod['technologies']
-            technologies.update(technos)
-            for techno in technos:
-                technos_per_prod[(prod_id, techno)] = 1
+            for techno_id, techno in technos.items():
+                # Prefix techno_id with prod_id to prevent id collision
+                techno_id = '{}/{}'.format(prod_id, techno_id)
+                technologies[techno_id] = techno
+                technos_per_prod[(prod_id, techno_id)] = 1
 
         self.model.i = pe.Set(
             initialize=production.keys(),
