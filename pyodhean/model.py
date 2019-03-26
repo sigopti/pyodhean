@@ -33,6 +33,8 @@ class Model:
         """
         opt = po.SolverFactory(solver)
         opt.set_options(options or {})
+        # Load solutions only on success to avoid a warning
+        kwargs.setdefault('load_solutions', False)
         result = opt.solve(self.model, **kwargs)
         success = (
             result.solver.status == po.SolverStatus.ok and
@@ -44,6 +46,7 @@ class Model:
             'termination_condition': str(result.solver.termination_condition),
         }
         if success:
+            self.model.solutions.load_from(result)
             ret['solution'] = self._get_solution()
         return ret
 
