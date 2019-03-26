@@ -112,9 +112,13 @@ model = Model(
 # [keepfiles] Keep .nl/.sol/.log files (default: False)
 result = model.solve('ipopt', options, tee=False, keepfiles=False)
 
+print('Success:', result['success'])
+print('Status:', result['status'])
+print('Termination condition:', result['termination_condition'])
+
 # Parse output
 
-configuration_out = model.get_solution()
+configuration_out = result['solution']
 
 nodes = [
     {
@@ -150,3 +154,17 @@ json_output = {
 }
 
 pprint(json_output)
+
+
+# Test solver failure
+
+options['max_iter'] = 2
+result = model.solve('ipopt', options, tee=False, keepfiles=False)
+
+print('success:', result['success'])
+print('status:', result['status'])
+print('termination condition:', result['termination_condition'])
+
+assert result['success'] is False
+assert result['status'] == 'warning'
+assert result['termination_condition'] == 'maxIterations'

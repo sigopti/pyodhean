@@ -33,9 +33,21 @@ class Model:
         """
         opt = po.SolverFactory(solver)
         opt.set_options(options or {})
-        opt.solve(self.model, **kwargs)
+        result = opt.solve(self.model, **kwargs)
+        success = (
+            result.solver.status == po.SolverStatus.ok and
+            result.solver.termination_condition == po.TerminationCondition.optimal
+        )
+        ret = {
+            'success': success,
+            'status': str(result.solver.status),
+            'termination_condition': str(result.solver.termination_condition),
+        }
+        if success:
+            ret['solution'] = self._get_solution()
+        return ret
 
-    def get_solution(self):
+    def _get_solution(self):
 
         # Production
         prod_mapping = {
