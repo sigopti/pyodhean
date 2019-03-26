@@ -29,14 +29,14 @@ json_input = {
 
 # Test solver success
 solver = JSONInterface(options)
-json_output = solver.solve(json_input)
+json_output = solver.solve(json_input, tee=False, keepfiles=False)
 pprint(json_output)
 
 
 # Test solver failure
 options['max_iter'] = 2
 solver = JSONInterface(options)
-json_output = solver.solve(json_input)
+json_output = solver.solve(json_input, tee=False, keepfiles=False)
 assert json_output['success'] is False
 assert json_output['status'] == 'warning'
 assert json_output['termination_condition'] == 'maxIterations'

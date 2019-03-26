@@ -15,9 +15,9 @@ class JSONInterface:
     def __init__(self, options):
         self.options = options
 
-    def solve(self, json_input):
+    def solve(self, json_input, **kwargs):
         problem = self.define_problem(json_input)
-        result = self.do_solve(problem)
+        result = self.do_solve(problem, **kwargs)
         return self.parse_result(result)
 
     def define_problem(self, json_input):
@@ -119,6 +119,6 @@ class JSONInterface:
 
         return result
 
-    def do_solve(self, problem):
+    def do_solve(self, problem, **kwargs):
         model = Model(**problem)
-        return model.solve('ipopt', self.options, tee=False, keepfiles=False)
+        return model.solve('ipopt', self.options, **kwargs)
