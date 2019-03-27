@@ -1011,9 +1011,9 @@ class Model:
             autres consommateurs (M_lineCC_return),
             sauf s'il est en fin de réseau et dans ce cas M_return = M_hx
             """
-            return self.model.M_return[j] == (
-                self.model.M_hx[j] +
-                sum(self.model.M_lineCC_return[o, j] for o in self.model.o if o != j)
+            return model.M_return[j] == (
+                model.M_hx[j] +
+                sum(model.M_lineCC_return[o, j] for o in model.o if o != j)
             )
         self.model.bilanD_debit_hx_out = pe.Constraint(self.model.j, rule=bilanD_debit_hx_out_rule)
 
@@ -1117,9 +1117,9 @@ class Model:
             """
             valeur = model.T_return[o] - model.T_lineCC_return_in[o, j]
             return (
-                - self.model.T_bigM * (1 - self.model.Y_lineCC_return[o, j]) <=
+                - model.T_bigM * (1 - model.Y_lineCC_return[o, j]) <=
                 valeur <=
-                self.model.T_bigM * (1 - self.model.Y_lineCC_return[o, j])
+                model.T_bigM * (1 - model.Y_lineCC_return[o, j])
             )
         self.model.bilanE2_T_return_bigM = pe.Constraint(
             self.model.o, self.model.j, rule=bilanE2_T_return_rule_bigM)
