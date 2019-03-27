@@ -28,9 +28,11 @@ DEFAULT_PARAMETERS = {
     'alpha': 1.75,
     # exposant pour le calcul des pertes de charge et le calcul du coût de pompage
     'beta': -1.25,
-    # coefficient directeur de la relation linéaire du coût de la canalisation selon le diamètre (ensemble tuyau+isolant)(€/m)
+    # coefficient directeur de la relation linéaire du coût de la canalisation
+    # selon le diamètre (ensemble tuyau+isolant)(€/m)
     'C_pipe_unit_a': 0.3722,
-    # ordonnée à l\'origine de la relation linéaire du coût de la canalisationselon le diamètre (ensemble tuyau+isolant)(€)
+    # ordonnée à l\'origine de la relation linéaire du coût de la canalisation
+    # selon le diamètre (ensemble tuyau+isolant)(€)
     'C_pipe_unit_b': 12.48,
     # coefficient directeur du coût unitaire de l\'echangeur (€/kW )
     'C_hx_unit_a': 5.3,
@@ -69,4 +71,3 @@ DEFAULT_PARAMETERS = {
     # distance max pour borner les longueurs de canalisations (m)
     'Dist_max_autorisee': 1000,
 }
-
