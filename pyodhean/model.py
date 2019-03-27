@@ -1,4 +1,5 @@
 """This file defines the PyODHEAN model class"""
+# pylint: disable=too-many-lines
 
 from math import pi
 
@@ -193,9 +194,11 @@ class Model:
                             .format(var, index, round(var[index].value, 3)))
 
     def display(self):
+        """Display model"""
         self.model.display()
 
     def def_production(self, production):
+        """Define production"""
         technologies = {}
         technos_per_prod = {}
         for prod_id, prod in production.items():
@@ -236,6 +239,7 @@ class Model:
             doc='Existence techno k au lieu de production Pi')
 
     def def_consumption(self, consumption):
+        """Define consumption"""
         self.model.j = pe.Set(
             initialize=consumption.keys(),
             doc='indice des noeuds consommateurs')
@@ -253,6 +257,7 @@ class Model:
             doc='température retour reseau secondaire du consommateur (°C)')
 
     def def_configuration(self, configuration):
+        """Define configuration"""
         table_Y_linePC = {
             (c, p): 1 if e else 0
             for (c, p), e in configuration['prod_cons_pipes'].items()
@@ -307,6 +312,9 @@ class Model:
             doc='matrice des longueurs de canalisations')
 
     def def_problem(self, general_parameters):
+        """Define problem"""
+        # pylint: disable=too-many-locals
+        # pylint: disable=too-many-statements
 
         T_prod_out_max = max(
             self.model.T_prod_out_max[k] for k in self.model.k)
@@ -357,10 +365,12 @@ class Model:
             doc='exposant pour le calcul des pertes de charge et le calcul du coût de pompage')
         self.model.C_pipe_unit_a = pe.Param(
             initialize=general_parameters['C_pipe_unit_a'],
-            doc='coefficient directeur de la relation linéaire du coût de la canalisation selon le diamètre (ensemble tuyau+isolant)(€/m)')
+            doc=('coefficient directeur de la relation linéaire du coût de la canalisation '
+                 'selon le diamètre (ensemble tuyau+isolant)(€/m)'))
         self.model.C_pipe_unit_b = pe.Param(
             initialize=general_parameters['C_pipe_unit_b'],
-            doc="ordonnée à l'origine de la relation linéaire du coût de la canalisationselon le diamètre (ensemble tuyau+isolant)(€)")
+            doc=("ordonnée à l'origine de la relation linéaire du coût de la canalisation "
+                 "selon le diamètre (ensemble tuyau+isolant)(€)"))
         self.model.C_hx_unit_a = pe.Param(
             initialize=general_parameters['C_hx_unit_a'],
             doc="coefficient directeur du coût unitaire de l'echangeur (€/kW )")
@@ -381,7 +391,8 @@ class Model:
             doc='conductivite thermique du sol (W/m.K)')
         self.model.z_pipe = pe.Param(
             initialize=general_parameters['z_pipe'],
-            doc='hauteur de sol au dessus des canalisations pour le calcul des pertes thermiques (m)')
+            doc=('hauteur de sol au dessus des canalisations pour le calcul des '
+                 'pertes thermiques (m)'))
         self.model.epsilon = pe.Param(
             initialize=general_parameters['epsilon'],
             doc='chiffre infinitesimal utile pour éviter les erreurs de division par zero')
@@ -429,8 +440,10 @@ class Model:
         self.model.H_inst_bigM = pe.Param(initialize=1000 * H_req_max)
 
         def calcul_gamma(model):
-            """coefficient gamma pour le calcul des pertes de charges du réseau (à combattre par la pompe)
-            pour en déduire la puissance de pompage et son coût"""
+            """coefficient gamma pour le calcul des pertes de charges du réseau
+
+            Pour en déduire la puissance de pompage et son coût
+            """
             return 100 / 70 * ((100 / model.mu)**(-0.25)) / (2 * (model.rho**0.75))
         self.model.gamma = pe.Param(initialize=calcul_gamma)
 
@@ -456,14 +469,20 @@ class Model:
         self.model.f_opex_pump = pe.Param(initialize=calcul_f_opex_pump)
 
         def calcul_f_capex(model):
-            """facteur multiplicateur pour le calcul du coût d'investissement permettant de tenir compte
-            du taux d'actualisation (mais pas d'inflation contraitement aux coûts opex)"""
+            """Facteur multiplicateur pour le calcul du coût d'investissement
+
+            Permet de tenir compte du taux d'actualisation
+            (mais pas d'inflation contraitement aux coûts opex)
+            """
             return (1 + model.rate_a)**model.depreciation_period
         self.model.f_capex = pe.Param(initialize=calcul_f_capex)
 
         def calcul_M_max(model):
-            """débit maximal dans la canalisation, lié à V_max et Dint_max,
-            s'applique à l'ensemble du réseau (productions, échangeurs en sous-station et conduites)"""
+            """Débit maximal dans la canalisation, lié à V_max et Dint_max
+
+            S'applique à l'ensemble du réseau (productions, échangeurs en sous-station
+            et conduites)
+            """
             return model.V_max * model.rho * pi * (model.Dint_max**2) / 4
         self.model.M_max = pe.Param(initialize=calcul_M_max)
 
@@ -490,22 +509,38 @@ class Model:
 
         def calcul_R_insul_max(model):
             """calcul de la résistance maximale de l'épaisseur d'isolant"""
-            return model.Dint_max / (2 * model.lambda_insul) * pe.log(model.Dout_max / model.Dint_max)
+            return (
+                model.Dint_max /
+                (2 * model.lambda_insul) *
+                pe.log(model.Dout_max / model.Dint_max)
+            )
         self.model.R_insul_max = pe.Param(initialize=calcul_R_insul_max)
 
         def calcul_R_insul_min(model):
             """calcul de la résistance minimale de l'épaisseur d'isolant"""
-            return model.Dint_min / (2 * model.lambda_insul) * pe.log(model.Dout_min / model.Dint_min)
+            return (
+                model.Dint_min /
+                (2 * model.lambda_insul) *
+                pe.log(model.Dout_min / model.Dint_min)
+            )
         self.model.R_insul_min = pe.Param(initialize=calcul_R_insul_min)
 
         def calcul_R_soil_max(model):
             """calcul de la résistance maximale du sol au dessus des canalisations"""
-            return model.Dint_max / (2 * model.lambda_soil) * pe.log(4 * model.z_pipe / model.Dout_max)
+            return (
+                model.Dint_max /
+                (2 * model.lambda_soil) *
+                pe.log(4 * model.z_pipe / model.Dout_max)
+            )
         self.model.R_soil_max = pe.Param(initialize=calcul_R_soil_max)
 
         def calcul_R_soil_min(model):
             """calcul de la résistance minimale du sol au dessus des canalisations"""
-            return model.Dint_min / (2 * model.lambda_soil) * pe.log(4 * model.z_pipe / model.Dout_min)
+            return (
+                model.Dint_min /
+                (2 * model.lambda_soil) *
+                pe.log(4 * model.z_pipe / model.Dout_min)
+            )
         self.model.R_soil_min = pe.Param(initialize=calcul_R_soil_min)
 
         def calcul_R_tot_max(model):
@@ -519,10 +554,11 @@ class Model:
         self.model.R_tot_min = pe.Param(initialize=calcul_R_tot_min)
 
         def calcul_T_init_min(model):
-            """température minimale qui sert de borne inférieure pour les températures de départ/entrée
-            (production, consommateur, échangeur, conduites, etc.).
-            Il s'agit de la plus petite température parmis les températures minimales de retour des
-            technologies de production et minimales de sortie des consommateurs"""
+            """Température minimale pour les températures de départ/entrée
+
+            Il s'agit de la plus petite température parmi les températures minimales de retour des
+            technologies de production et minimales de sortie des consommateurs
+            """
             return min(
                 min(model.T_prod_in_min[k] for k in model.k),
                 min(model.T_req_in[j] for j in model.j)
@@ -629,7 +665,8 @@ class Model:
             self.model.j,
             initialize=self.model.M_min,
             bounds=(self.model.M_min, self.model.M_max),
-            doc="debit avant l'échangeur de C(j); différent de M_hx seulement si cascade autorisée (kg/s)")
+            doc=("debit avant l'échangeur de C(j); "
+                 "différent de M_hx seulement si cascade autorisée (kg/s)"))
         self.model.M_lineCC_parallel = pe.Var(
             self.model.j, self.model.o,
             initialize=self.model.M_min,
@@ -644,7 +681,10 @@ class Model:
             self.model.j,
             initialize=self.model.M_min,
             bounds=(self.model.M_min, self.model.M_max),
-            doc="debit après l'échangeur au noeud C(j); différent de M_hx seulement si cascade (kg/s)")
+            doc=(
+                "debit après l'échangeur au noeud C(j); "
+                "différent de M_hx seulement si cascade (kg/s)")
+            )
 
         # Températures
         self.model.T_prod_in = pe.Var(
@@ -661,7 +701,8 @@ class Model:
             self.model.i, self.model.k,
             initialize=self.model.T_init_min,
             bounds=(self.model.T_init_min, self.model.T_init_max),
-            doc='température de retour de la technologie k à la production i = température de retour à la production i (°C)')
+            doc=('température de retour de la technologie k à la production i '
+                 '= température de retour à la production i (°C)'))
         self.model.T_prod_tot_out = pe.Var(
             self.model.i,
             initialize=self.model.T_init_min,
@@ -676,7 +717,8 @@ class Model:
             self.model.i, self.model.j,
             initialize=self.model.T_init_min,
             bounds=(self.model.T_init_min, self.model.T_init_max),
-            doc="température d'entrée dans le premier noeud = température de départ de la production i - pertes (°C)")
+            doc=("température d'entrée dans le premier noeud "
+                 "= température de départ de la production i - pertes (°C)"))
         self.model.T_lineCP_in = pe.Var(
             self.model.j, self.model.i,
             initialize=self.model.T_init_min,
@@ -686,7 +728,8 @@ class Model:
             self.model.j, self.model.i,
             initialize=self.model.T_init_min,
             bounds=(self.model.T_init_min, self.model.T_init_max),
-            doc='température de retour à la production i = température de départ du dernier noeud - pertes (°C)')
+            doc=('température de retour à la production i '
+                 '= température de départ du dernier noeud - pertes (°C)'))
         self.model.T_hx_in = pe.Var(
             self.model.j,
             initialize=self.model.T_init_min,
@@ -800,11 +843,13 @@ class Model:
         # Longueur du réseau
         self.model.L_tot = pe.Var(
             initialize=0, bounds=(0, None),
-            doc='Longueur totale du réseau = longueur de tuyaux posés = 2 fois la longueur de tranchée car tuyau aller-retour')
+            doc=('Longueur totale du réseau = longueur de tuyaux posés '
+                 '= 2 fois la longueur de tranchée car tuyau aller-retour'))
 
         # Constraints
 
-        # Définition des diametres exterieurs = diametre interieur + epaisseur du tuyau et epaisseur isolant
+        # Définition des diametres exterieurs
+        # = diametre interieur + epaisseur du tuyau et epaisseur isolant
         def Def_Dout_PC_rule(model, i, j):
             """Diamètre des canalisations producteurs-consommateurs - ALLER"""
             return model.Dout_PC[i, j] == (
@@ -1057,7 +1102,7 @@ class Model:
 
         # BILAN D'ENERGIE ET EGALITE DE TEMPERATURE
         def bilanA_H_supply_rule(model, j):
-            """Bilan d'énergie au point A d'un noeud consommateur car point convergeant"""
+            """Bilan d'énergie au point A d'un noeud consommateur (point convergent)"""
             return model.M_supply[j] * model.T_supply[j] == (
                 sum(model.M_linePC[i, j] * model.T_linePC_out[i, j] for i in model.i) +
                 sum(model.M_lineCC_parallel[o, j] * model.T_lineCC_parallel_out[o, j]
@@ -1066,9 +1111,11 @@ class Model:
         self.model.bilanA_H_supply = pe.Constraint(self.model.j, rule=bilanA_H_supply_rule)
 
         def bilanB_T_hx_in_rule_bigM(model, j, o):
-            """Première égalité de température au point B d'un noeud consommateur car point divergent
+            """Première égalité de température au point B d'un noeud consommateur (point divergent)
+
             Tsupply = TlineCC_parallel
-            Inéquation du bigM"""
+            Inéquation du bigM
+            """
             valeur = model.T_supply[j] - model.T_lineCC_parallel_in[j, o]
             return (
                 - model.T_bigM * (1 - model.Y_lineCC_parallel[j, o]) <=
@@ -1079,7 +1126,8 @@ class Model:
             self.model.j, self.model.o, rule=bilanB_T_hx_in_rule_bigM)
 
         def bilanB2_T_hx_in_rule(model, j):
-            """Deuxième égalité de température au point B d'un noeud consommateur car point divergeant
+            """Deuxième égalité de température au point B d'un noeud consommateur (point divergent)
+
             Tsupply = Thx
             Pas de bigM car si le consommateur existe l'échangeur est forcément alimenté alors
             que la liaison avec un autre consommateur (TlineCC_parallel) n'existe pas forcément
@@ -1088,7 +1136,7 @@ class Model:
         self.model.bilanB2_T_hx_in = pe.Constraint(self.model.j, rule=bilanB2_T_hx_in_rule)
 
         def bilanD_H_hx_out_rule(model, j):
-            """Bilan d'énergie au point D d'un noeud consommateur car point convergeant"""
+            """Bilan d'énergie au point D d'un noeud consommateur (point convergent)"""
             return model.M_return[j] * model.T_return[j] == (
                 model.M_hx[j] * model.T_hx_out[j] +
                 sum(model.M_lineCC_return[o, j] * model.T_lineCC_return_out[o, j]
@@ -1097,7 +1145,8 @@ class Model:
         self.model.bilanD_H_hx_out = pe.Constraint(self.model.j, rule=bilanD_H_hx_out_rule)
 
         def bilanE_T_return_rule_bigM(model, i, j):
-            """Première égalité de température au point E d'un noeud consommateur car point divergeant
+            """Première égalité de température au point E d'un noeud consommateur (point divergent)
+
             Treturn = TlineCP
             Inéquation du bigM
             """
@@ -1111,7 +1160,8 @@ class Model:
             self.model.i, self.model.j, rule=bilanE_T_return_rule_bigM)
 
         def bilanE2_T_return_rule_bigM(model, o, j):
-            """Deuxième égalité de température au point E d'un noeud consommateur car point divergeant
+            """Deuxième égalité de température au point E d'un noeud consommateur (point divergent)
+
             Treturn = T_lineCC_return
             Inéquation du bigM
             """
@@ -1125,7 +1175,7 @@ class Model:
             self.model.o, self.model.j, rule=bilanE2_T_return_rule_bigM)
 
         def bilanF_H_prod_tot_in_rule(model, i):
-            """Bilan d'énergie au point F d'un noeud producteur car point convergeant"""
+            """Bilan d'énergie au point F d'un noeud producteur (point convergent)"""
             return model.M_prod_tot[i] * model.T_prod_tot_in[i] == (
                 sum(model.M_lineCP[j, i] * model.T_lineCP_out[j, i] for j in model.j)
             )
@@ -1133,7 +1183,8 @@ class Model:
             self.model.i, rule=bilanF_H_prod_tot_in_rule)
 
         def bilanG_T_prod_in_rule_bigM(model, i, k):
-            """Egalité de température au point G d'un noeud producteur car point convergeant
+            """Egalité de température au point G d'un noeud producteur (point convergent)
+
             Tprod_tot = Tprod : la température de retour est la même pour toutes les technologies
             Inéquation du bigM"""
             valeur = model.T_prod_tot_in[i] - model.T_prod_in[i, k]
@@ -1146,7 +1197,8 @@ class Model:
             self.model.i, self.model.k, rule=bilanG_T_prod_in_rule_bigM)
 
         def bilanH_H_prod_out_rule(model, i):
-            """Bilan d'énergie au point H d'un noeud producteur car point convergeant
+            """Bilan d'énergie au point H d'un noeud producteur (point convergent)
+
             Mélange des fluides provenant des technologies k à la production i
             """
             return model.M_prod_tot[i] * model.T_prod_tot_out[i] == (
@@ -1156,7 +1208,8 @@ class Model:
             self.model.i, rule=bilanH_H_prod_out_rule)
 
         def bilanI_T_prod_tot_out_rule_bigM(model, i, j):
-            """Egalité de température au point I d'un noeud producteur car point divergeant
+            """Egalité de température au point I d'un noeud producteur (point divergent)
+
             La production peut alimenter ou non les consommateurs
             Inéquation du bigM
             """
@@ -1202,12 +1255,18 @@ class Model:
         self.model.bilan_chaleur_HX = pe.Constraint(self.model.j, rule=bilan_chaleur_HX_rule)
 
         def bilan_DT1_rule(model, j):
-            """Delta T côté chaud de l'échangeur (DT1) = entrée au primaire - sortie au secondaire"""
+            """Delta T côté chaud de l'échangeur (DT1)
+
+            = entrée au primaire - sortie au secondaire
+            """
             return model.DT1[j] == model.T_hx_in[j] - model.T_req_out[j]
         self.model.bilan_DT1 = pe.Constraint(self.model.j, rule=bilan_DT1_rule)
 
         def bilan_DT2_rule(model, j):
-            """Delta T côté froid de l'échangeur (DT2) = sortie au primaire - entrée au secondaire"""
+            """Delta T côté froid de l'échangeur (DT2)
+
+            = sortie au primaire - entrée au secondaire
+            """
             return model.DT2[j] == model.T_hx_out[j] - model.T_req_in[j]
         self.model.bilan_DT2 = pe.Constraint(self.model.j, rule=bilan_DT2_rule)
 
@@ -1222,14 +1281,19 @@ class Model:
         self.model.bilan_DT2_pinch = pe.Constraint(self.model.j, rule=bilan_DT2_pinch_rule)
 
         def diffTemplog_rule(model, j):
-            """Calcul de la DTLM: Différence logarithmique de température à l’échangeur de chaleur (°C)"""
+            """Calcul de la DTLM
+
+            Différence logarithmique de température à l’échangeur de chaleur (°C)
+            """
             return model.DTLM[j] == (
                 model.DT1[j] * model.DT2[j] * 0.5 * (model.DT1[j] + model.DT2[j])
             ) ** (1 / 3)
         self.model.diffTemplog = pe.Constraint(self.model.j, rule=diffTemplog_rule)
 
         def bilan_chaleur_HX_DTLM_rule(model, j):
-            """Bilan de puissance à l'échangeur avec le DTLM qui dépend des températures au primaire et secondaire
+            """Bilan de puissance à l'échangeur
+
+            Avec le DTLM qui dépend des températures au primaire et secondaire
             H = coeff_échange * surface * DTLM"""
             return model.H_hx[j] == model.A_hx[j] * model.K_hx * model.DTLM[j]
         self.model.bilan_chaleur_HX_DTLM = pe.Constraint(
@@ -1260,7 +1324,7 @@ class Model:
 
         # Contrainte à l'échangeur
         def contrainte_appro_rule(model, j):
-            """La puissance calculée à l'échangeur doit être égale à celle requise rentrée par l'utilisateur"""
+            """La puissance à l'échangeur doit être égale à celle entrée par l'utilisateur"""
             return model.H_hx[j] == model.H_req[j]
         self.model.contrainte_appro = pe.Constraint(self.model.j, rule=contrainte_appro_rule)
 
