@@ -183,16 +183,6 @@ class Model:
         }
         return configuration
 
-    def write_solution(self, filename):
-        with open(filename, 'w') as f:
-            f.write('///Objective///\n')
-            f.write(str(round(pe.value(self.model.objective, 2))) + '\n')
-            f.write('///Variables///\n')
-            for var in self.model.component_objects(pe.Var, active=True):
-                for index in var:
-                    f.write('{} [{}] {}\n'
-                            .format(var, index, round(var[index].value, 3)))
-
     def display(self):
         """Display model"""
         self.model.display()

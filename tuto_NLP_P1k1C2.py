@@ -1,3 +1,5 @@
+import pyomo.environ as pe
+
 from pyodhean.model import Model
 
 
@@ -75,4 +77,13 @@ print('')
 print('### Display ###\n')
 model.display()
 
-model.write_solution('./solution.txt')
+# Print solutions in output file
+SOLUTIONS_FILENAME = './solution.txt'
+with open(SOLUTIONS_FILENAME, 'w') as f:
+    f.write('/// Objective ///\n')
+    f.write(str(round(pe.value(model.model.objective, 2))) + '\n')
+    f.write('/// Variables ///\n')
+    for var in model.model.component_objects(pe.Var, active=True):
+        for index in var:
+            f.write('{} [{}] {}\n'
+                    .format(var, index, round(var[index].value, 3)))
