@@ -8,7 +8,7 @@ def _id2str(coords):
 
 
 def _str2id(coords):
-    return [int(v) for v in coords.split('_')]
+    return [float(v) for v in coords.split('_')]
 
 
 class JSONInterface:
