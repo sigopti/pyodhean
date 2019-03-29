@@ -12,11 +12,11 @@ options = {
 json_input = {
     'nodes': [
         # P1
-        {'id': [0, 0], 'Dist_to_source': 0, 'kWh': 0, 'tot_kWh': 15467900, 'Type': 'Source'},
+        {'id': [0, 0], 'kWh': 0, 'tot_kWh': 15467900, 'Type': 'Source'},
         # C1
-        {'id': [2, 5], 'Dist_to_source': 10, 'kWh': 5382100.0, 'tot_kWh': 15467900},
+        {'id': [2, 5], 'kWh': 5382100.0, 'tot_kWh': 15467900},
         # C2
-        {'id': [30, 50], 'Dist_to_source': 110, 'kWh': 0, 'tot_kWh': 10085800}
+        {'id': [30, 50], 'kWh': 0, 'tot_kWh': 10085800}
     ],
     'links': [
         # P1 -> C1
