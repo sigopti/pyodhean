@@ -1,4 +1,4 @@
-"""Interface to PyODHEAN model"""
+"""Interface to PyODHeaN model"""
 
 from pyodhean.model import Model
 
@@ -12,7 +12,7 @@ def _str2id(coords):
 
 
 class JSONInterface:
-    """PyODHEAN JSON interface
+    """PyODHeaN JSON interface
 
     :param dict options: Solver options
     """

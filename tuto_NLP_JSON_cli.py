@@ -15,7 +15,7 @@ options = {
 }
 
 
-parser = argparse.ArgumentParser(description='Solve PyODHEAN model.')
+parser = argparse.ArgumentParser(description='Solve PyODHeaN model.')
 parser.add_argument('-i', dest='input_file', required=True, help='Input JSON file')
 
 args = parser.parse_args()

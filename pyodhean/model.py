@@ -1,4 +1,4 @@
-"""This file defines the PyODHEAN model class"""
+"""This file defines the PyODHeaN model class"""
 # pylint: disable=too-many-lines
 
 from math import pi
@@ -11,7 +11,7 @@ from .utils import pluck
 
 
 class Model:
-    """PyODHEAN model class"""
+    """PyODHeaN model class"""
 
     def __init__(self, production, consumption, configuration, general_parameters=None):
         # Store inputs
