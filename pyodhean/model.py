@@ -875,9 +875,9 @@ class Model:
                     model.rho * pi * model.Dint_PC[i, j] * model.Dint_PC[i, j] / 4) -
                 model.M_linePC[i, j]
             )
-            return (
-                - model.M_bigM * (1 - model.Y_linePC[i, j]) <=
-                valeur <=
+            return pe.inequality(
+                - model.M_bigM * (1 - model.Y_linePC[i, j]),
+                valeur,
                 model.M_bigM * (1 - model.Y_linePC[i, j])
             )
         self.model.Def_V_linePC_bigM = pe.Constraint(
@@ -890,9 +890,9 @@ class Model:
                     model.rho * pi * model.Dint_CP[j, i] * model.Dint_CP[j, i] / 4) -
                 model.M_lineCP[j, i]
             )
-            return (
-                - model.M_bigM * (1 - model.Y_lineCP[j, i]) <=
-                valeur <=
+            return pe.inequality(
+                - model.M_bigM * (1 - model.Y_lineCP[j, i]),
+                valeur,
                 model.M_bigM * (1 - model.Y_lineCP[j, i])
             )
         self.model.Def_V_lineCP_bigM = pe.Constraint(
@@ -905,9 +905,9 @@ class Model:
                 model.rho * pi * model.Dint_CC_parallel[j, o] * model.Dint_CC_parallel[j, o] / 4 -
                 model.M_lineCC_parallel[j, o]
             )
-            return (
-                - model.M_bigM * (1 - model.Y_lineCC_parallel[j, o]) <=
-                valeur <=
+            return pe.inequality(
+                - model.M_bigM * (1 - model.Y_lineCC_parallel[j, o]),
+                valeur,
                 model.M_bigM * (1 - model.Y_lineCC_parallel[j, o])
             )
         self.model.Def_V_lineCC_parallel_bigM = pe.Constraint(
@@ -920,9 +920,9 @@ class Model:
                 model.rho * pi * model.Dint_CC_return[o, j] * model.Dint_CC_return[o, j] / 4 -
                 model.M_lineCC_return[o, j]
             )
-            return (
-                - model.M_bigM * (1 - model.Y_lineCC_return[o, j]) <=
-                valeur <=
+            return pe.inequality(
+                - model.M_bigM * (1 - model.Y_lineCC_return[o, j]),
+                valeur,
                 model.M_bigM * (1 - model.Y_lineCC_return[o, j])
             )
         self.model.Def_V_lineCC_return_bigM = pe.Constraint(
@@ -1107,9 +1107,9 @@ class Model:
             Inéquation du bigM
             """
             valeur = model.T_supply[j] - model.T_lineCC_parallel_in[j, o]
-            return (
-                - model.T_bigM * (1 - model.Y_lineCC_parallel[j, o]) <=
-                valeur <=
+            return pe.inequality(
+                - model.T_bigM * (1 - model.Y_lineCC_parallel[j, o]),
+                valeur,
                 model.T_bigM * (1 - model.Y_lineCC_parallel[j, o])
             )
         self.model.bilanB_T_hx_in_bigM = pe.Constraint(
@@ -1141,9 +1141,9 @@ class Model:
             Inéquation du bigM
             """
             valeur = model.T_return[j] - model.T_lineCP_in[j, i]
-            return (
-                - model.T_bigM * (1 - model.Y_lineCP[j, i]) <=
-                valeur <=
+            return pe.inequality(
+                - model.T_bigM * (1 - model.Y_lineCP[j, i]),
+                valeur,
                 model.T_bigM * (1 - model.Y_lineCP[j, i])
             )
         self.model.bilanE_T_return_bigM = pe.Constraint(
@@ -1156,9 +1156,9 @@ class Model:
             Inéquation du bigM
             """
             valeur = model.T_return[o] - model.T_lineCC_return_in[o, j]
-            return (
-                - model.T_bigM * (1 - model.Y_lineCC_return[o, j]) <=
-                valeur <=
+            return pe.inequality(
+                - model.T_bigM * (1 - model.Y_lineCC_return[o, j]),
+                valeur,
                 model.T_bigM * (1 - model.Y_lineCC_return[o, j])
             )
         self.model.bilanE2_T_return_bigM = pe.Constraint(
@@ -1178,9 +1178,9 @@ class Model:
             Tprod_tot = Tprod : la température de retour est la même pour toutes les technologies
             Inéquation du bigM"""
             valeur = model.T_prod_tot_in[i] - model.T_prod_in[i, k]
-            return (
-                - model.T_bigM * (1 - model.Y_P[i, k]) <=
-                valeur <=
+            return pe.inequality(
+                - model.T_bigM * (1 - model.Y_P[i, k]),
+                valeur,
                 model.T_bigM * (1 - model.Y_P[i, k])
             )
         self.model.bilanG_T_prod_in_bigM = pe.Constraint(
@@ -1204,9 +1204,9 @@ class Model:
             Inéquation du bigM
             """
             valeur = model.T_linePC_in[i, j] - model.T_prod_tot_out[i]
-            return (
-                - model.T_bigM * (1 - model.Y_linePC[i, j]) <=
-                valeur <=
+            return pe.inequality(
+                - model.T_bigM * (1 - model.Y_linePC[i, j]),
+                valeur,
                 model.T_bigM * (1 - model.Y_linePC[i, j])
             )
         self.model.bilanI_T_prod_tot_out_bigM = pe.Constraint(
