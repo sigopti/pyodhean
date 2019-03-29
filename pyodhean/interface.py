@@ -1,33 +1,45 @@
+"""Interface to PyODHEAN model"""
+
 from pyodhean.model import Model
 
 
-def id2str(coords):
-    return ('{x}_{y}'.format(x=coords[0], y=coords[1]))
+def _id2str(coords):
+    return '{x}_{y}'.format(x=coords[0], y=coords[1])
 
 
-def str2id(coords):
+def _str2id(coords):
     return [int(v) for v in coords.split('_')]
 
 
 class JSONInterface:
-    """PyODHEAN JSON interface"""
+    """PyODHEAN JSON interface
+
+    :param dict options: Solver options
+    """
 
     def __init__(self, options):
         self.options = options
 
     def solve(self, json_input, **kwargs):
-        problem = self.define_problem(json_input)
-        result = self.do_solve(problem, **kwargs)
-        return self.parse_result(result)
+        """Solve model
 
-    def define_problem(self, json_input):
+        Returns solver result.
+
+        :param dict json_input: Problem description in JSON form
+        """
+        problem = self._define_problem(json_input)
+        result = self._do_solve(problem, **kwargs)
+        return self._parse_result(result)
+
+    @staticmethod
+    def _define_problem(json_input):
 
         # Production / consumption nodes
         production = {}
         consumption = {}
         for node in json_input['nodes']:
             if node.get('Type') == 'Source':
-                production[id2str(node['id'])] = {
+                production[_id2str(node['id'])] = {
                     # TODO: Get that from JSON
                     'technologies': {
                         'k1': {
@@ -41,7 +53,7 @@ class JSONInterface:
                     },
                 }
             else:
-                consumption[id2str(node['id'])] = {
+                consumption[_id2str(node['id'])] = {
                     # TODO: Get that from JSON
                     'H_req': 80,
                     'T_req_out': 60,
@@ -52,8 +64,8 @@ class JSONInterface:
         prod_cons_pipes = {}
         cons_cons_pipes = {}
         for link in json_input['links']:
-            src = id2str(link['source'])
-            trg = id2str(link['target'])
+            src = _id2str(link['source'])
+            trg = _id2str(link['target'])
             if src in production:
                 prod_cons_pipes[(src, trg)] = link['Length']
             elif src in consumption:
@@ -77,7 +89,8 @@ class JSONInterface:
             'configuration': configuration,
         }
 
-    def parse_result(self, result):
+    @staticmethod
+    def _parse_result(result):
 
         if not result['success']:
             return result
@@ -86,14 +99,14 @@ class JSONInterface:
 
         nodes = [
             {
-                'id': str2id(prod_id),
+                'id': _str2id(prod_id),
                 'Type': 'Source',
                 **values
             }
             for prod_id, values in configuration_out['production'].items()
         ] + [
             {
-                'id': str2id(cons_id),
+                'id': _str2id(cons_id),
                 **values
             }
             for cons_id, values in configuration_out['consumption'].items()
@@ -101,8 +114,8 @@ class JSONInterface:
 
         links = [
             {
-                'source': str2id(src),
-                'target': str2id(trg),
+                'source': _str2id(src),
+                'target': _str2id(trg),
                 **values
             }
             for (src, trg), values in {
@@ -119,6 +132,6 @@ class JSONInterface:
 
         return result
 
-    def do_solve(self, problem, **kwargs):
+    def _do_solve(self, problem, **kwargs):
         model = Model(**problem)
         return model.solve('ipopt', self.options, **kwargs)
