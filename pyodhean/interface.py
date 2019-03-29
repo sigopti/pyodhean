@@ -17,7 +17,7 @@ class JSONInterface:
     :param dict options: Solver options
     """
 
-    def __init__(self, options):
+    def __init__(self, options=None):
         self.options = options
 
     def solve(self, json_input, **kwargs):
