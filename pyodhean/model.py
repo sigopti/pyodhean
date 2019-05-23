@@ -673,8 +673,7 @@ class Model:
             bounds=(self.model.M_min, self.model.M_max),
             doc=(
                 "debit après l'échangeur au noeud C(j); "
-                "différent de M_hx seulement si cascade (kg/s)")
-            )
+                "différent de M_hx seulement si cascade (kg/s)"))
 
         # Températures
         self.model.T_prod_in = pe.Var(
