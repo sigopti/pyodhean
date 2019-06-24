@@ -52,9 +52,9 @@ json_input = {
     },
     'links': [
         # P1 -> C1
-        {'Length': 10.0, 'source': [0.0, 0.0], 'target': [2.0, 5.0]},
+        {'length': 10.0, 'source': [0.0, 0.0], 'target': [2.0, 5.0]},
         # C1 -> C2
-        {'Length': 100.0, 'source': [2.0, 5.0], 'target': [30.0, 50.0]},
+        {'length': 100.0, 'source': [2.0, 5.0], 'target': [30.0, 50.0]},
     ]
 }
 
@@ -99,9 +99,9 @@ for link in json_input['links']:
     src = id2str(link['source'])
     trg = id2str(link['target'])
     if src in production:
-        prod_cons_pipes[(src, trg)] = link['Length']
+        prod_cons_pipes[(src, trg)] = link['length']
     elif src in consumption:
-        cons_cons_pipes[(src, trg)] = link['Length']
+        cons_cons_pipes[(src, trg)] = link['length']
     else:
         raise ValueError('Link with unknown source.')
 for cons in consumption:

@@ -63,9 +63,9 @@ class JSONInterface:
             src = _id2str(link['source'])
             trg = _id2str(link['target'])
             if src in production:
-                prod_cons_pipes[(src, trg)] = link['Length']
+                prod_cons_pipes[(src, trg)] = link['length']
             elif src in consumption:
-                cons_cons_pipes[(src, trg)] = link['Length']
+                cons_cons_pipes[(src, trg)] = link['length']
             else:
                 raise ValueError('Link with unknown source.')
         for cons in consumption:
