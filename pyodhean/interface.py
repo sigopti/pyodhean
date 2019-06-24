@@ -36,21 +36,19 @@ class JSONInterface:
 
         # Production / consumption nodes
         production = {}
-        consumption = {}
         for node in json_input['nodes']['production']:
-            production[_id2str(node['id'])] = {
-                # TODO: Get that from JSON
-                'technologies': {
-                    'k1': {
-                        'C_Hprod_unit': 800,
-                        'C_heat_unit': 0.08,
-                        'Eff': 0.9,
-                        'rate_i': 0.04,
-                        'T_prod_out_max': 100,
-                        'T_prod_in_min': 30,
-                    },
-                },
-            }
+            technologies = {}
+            for name, techno in node['technologies'].items():
+                technologies[name] = {
+                    'Eff': techno['efficiency'],
+                    'T_prod_out_max': techno['t_out_max'],
+                    'T_prod_in_min': techno['t_in_min'],
+                    'C_Hprod_unit': techno['production_unitary_cost'],
+                    'C_heat_unit': techno['energy_unitary_cost'],
+                    'rate_i': techno['energy_cost_inflation_rate'],
+                }
+            production[_id2str(node['id'])] = {'technologies': technologies}
+        consumption = {}
         for node in json_input['nodes']['consumption']:
             consumption[_id2str(node['id'])] = {
                 'H_req': node['kW'],
