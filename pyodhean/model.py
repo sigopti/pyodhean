@@ -207,7 +207,7 @@ class Model:
             doc='indice technologie de production')
         self.model.C_Hprod_unit = pe.Param(
             self.model.k, initialize=pluck(technologies, 'C_Hprod_unit'),
-            doc='coût unitaire  de la chaudiere installée (€/kW)')
+            doc='coût unitaire de la chaudiere installée (€/kW)')
         self.model.C_heat_unit = pe.Param(
             self.model.k, initialize=pluck(technologies, 'C_heat_unit'),
             doc="coût unitaire de la chaleur suivant l'énergie de la technologie employee "
