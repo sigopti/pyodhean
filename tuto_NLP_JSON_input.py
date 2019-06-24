@@ -43,12 +43,12 @@ json_input = {
             # C1
             {
                 'id': [2.0, 5.0], 'kWh': 5382100.0, 'tot_kWh': 15467900,
-                'kW': 80, 'Tin': 80, 'Tout': 60,
+                'kW': 80, 't_in': 80, 't_out': 60,
             },
             # C2
             {
                 'id': [30.0, 50.0], 'kWh': 0, 'tot_kWh': 10085800,
-                'kW': 80, 'Tin': 80, 'Tout': 60,
+                'kW': 80, 't_in': 80, 't_out': 60,
             },
         ],
     },
@@ -88,8 +88,8 @@ consumption = {}
 for node in json_input['nodes']['consumption']:
     consumption[id2str(node['id'])] = {
         'H_req': node['kW'],
-        'T_req_out': node['Tout'],
-        'T_req_in': node['Tin'],
+        'T_req_out': node['t_out'],
+        'T_req_in': node['t_in'],
     }
 
 

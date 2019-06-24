@@ -52,8 +52,8 @@ class JSONInterface:
         for node in json_input['nodes']['consumption']:
             consumption[_id2str(node['id'])] = {
                 'H_req': node['kW'],
-                'T_req_out': node['Tout'],
-                'T_req_in': node['Tin'],
+                'T_req_out': node['t_out'],
+                'T_req_in': node['t_in'],
             }
 
         # Configuration
