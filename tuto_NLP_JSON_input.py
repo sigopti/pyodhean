@@ -24,11 +24,19 @@ options = {
 json_input = {
     'nodes': [
         # P1
-        {'id': [0, 0], 'kWh': 0, 'tot_kWh': 15467900, 'Type': 'Source'},
+        {
+            'id': [0, 0], 'kWh': 0, 'tot_kWh': 15467900, 'Type': 'Source',
+        },
         # C1
-        {'id': [2, 5], 'kWh': 5382100.0, 'tot_kWh': 15467900},
+        {
+            'id': [2, 5], 'kWh': 5382100.0, 'tot_kWh': 15467900,
+            'kW': 80, 'Tin': 80, 'Tout': 60,
+        },
         # C2
-        {'id': [30, 50], 'kWh': 0, 'tot_kWh': 10085800}
+        {
+            'id': [30, 50], 'kWh': 0, 'tot_kWh': 10085800,
+            'kW': 80, 'Tin': 80, 'Tout': 60,
+        }
     ],
     'links': [
         # P1 -> C1
@@ -68,10 +76,9 @@ for node in json_input['nodes']:
         }
     else:
         consumption[id2str(node['id'])] = {
-            # TODO: Get that from JSON
-            'H_req': 80,
-            'T_req_out': 60,
-            'T_req_in': 80,
+            'H_req': node['kW'],
+            'T_req_out': node['Tout'],
+            'T_req_in': node['Tin'],
         }
 
 

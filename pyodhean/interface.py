@@ -54,10 +54,9 @@ class JSONInterface:
                 }
             else:
                 consumption[_id2str(node['id'])] = {
-                    # TODO: Get that from JSON
-                    'H_req': 80,
-                    'T_req_out': 60,
-                    'T_req_in': 80,
+                    'H_req': node['kW'],
+                    'T_req_out': node['Tout'],
+                    'T_req_in': node['Tin'],
                 }
 
         # Configuration
