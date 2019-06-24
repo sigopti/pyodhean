@@ -37,27 +37,26 @@ class JSONInterface:
         # Production / consumption nodes
         production = {}
         consumption = {}
-        for node in json_input['nodes']:
-            if node.get('Type') == 'Source':
-                production[_id2str(node['id'])] = {
-                    # TODO: Get that from JSON
-                    'technologies': {
-                        'k1': {
-                            'C_Hprod_unit': 800,
-                            'C_heat_unit': 0.08,
-                            'Eff': 0.9,
-                            'rate_i': 0.04,
-                            'T_prod_out_max': 100,
-                            'T_prod_in_min': 30,
-                        },
+        for node in json_input['nodes']['production']:
+            production[_id2str(node['id'])] = {
+                # TODO: Get that from JSON
+                'technologies': {
+                    'k1': {
+                        'C_Hprod_unit': 800,
+                        'C_heat_unit': 0.08,
+                        'Eff': 0.9,
+                        'rate_i': 0.04,
+                        'T_prod_out_max': 100,
+                        'T_prod_in_min': 30,
                     },
-                }
-            else:
-                consumption[_id2str(node['id'])] = {
-                    'H_req': node['kW'],
-                    'T_req_out': node['Tout'],
-                    'T_req_in': node['Tin'],
-                }
+                },
+            }
+        for node in json_input['nodes']['consumption']:
+            consumption[_id2str(node['id'])] = {
+                'H_req': node['kW'],
+                'T_req_out': node['Tout'],
+                'T_req_in': node['Tin'],
+            }
 
         # Configuration
         prod_cons_pipes = {}
@@ -96,20 +95,22 @@ class JSONInterface:
 
         configuration_out = result['solution']
 
-        nodes = [
-            {
-                'id': _str2id(prod_id),
-                'Type': 'Source',
-                **values
-            }
-            for prod_id, values in configuration_out['production'].items()
-        ] + [
-            {
-                'id': _str2id(cons_id),
-                **values
-            }
-            for cons_id, values in configuration_out['consumption'].items()
-        ]
+        nodes = {
+            'production': [
+                {
+                    'id': _str2id(prod_id),
+                    **values
+                }
+                for prod_id, values in configuration_out['production'].items()
+            ],
+            'consumption': [
+                {
+                    'id': _str2id(cons_id),
+                    **values
+                }
+                for cons_id, values in configuration_out['consumption'].items()
+            ],
+        }
 
         links = [
             {

@@ -22,64 +22,67 @@ options = {
 
 
 json_input = {
-    'nodes': [
-        # P1
-        {
-            'id': [0, 0], 'kWh': 0, 'tot_kWh': 15467900, 'Type': 'Source',
-        },
-        # C1
-        {
-            'id': [2, 5], 'kWh': 5382100.0, 'tot_kWh': 15467900,
-            'kW': 80, 'Tin': 80, 'Tout': 60,
-        },
-        # C2
-        {
-            'id': [30, 50], 'kWh': 0, 'tot_kWh': 10085800,
-            'kW': 80, 'Tin': 80, 'Tout': 60,
-        }
-    ],
+    'nodes': {
+        'production': [
+            # P1
+            {
+                'id': [0.0, 0.0], 'kWh': 0, 'tot_kWh': 15467900,
+            },
+        ],
+        'consumption': [
+            # C1
+            {
+                'id': [2.0, 5.0], 'kWh': 5382100.0, 'tot_kWh': 15467900,
+                'kW': 80, 'Tin': 80, 'Tout': 60,
+            },
+            # C2
+            {
+                'id': [30.0, 50.0], 'kWh': 0, 'tot_kWh': 10085800,
+                'kW': 80, 'Tin': 80, 'Tout': 60,
+            },
+        ],
+    },
     'links': [
         # P1 -> C1
-        {'Length': 10, 'source': [0, 0], 'target': [2, 5]},
+        {'Length': 10.0, 'source': [0.0, 0.0], 'target': [2.0, 5.0]},
         # C1 -> C2
-        {'Length': 100, 'source': [2, 5], 'target': [30, 50]},
+        {'Length': 100.0, 'source': [2.0, 5.0], 'target': [30.0, 50.0]},
     ]
 }
 
 
 def id2str(coords):
-    return ('{x}_{y}'.format(x=coords[0], y=coords[1]))
+    return '{x}_{y}'.format(x=coords[0], y=coords[1])
 
 
 def str2id(coords):
-    return [int(v) for v in coords.split('_')]
+    return [float(v) for v in coords.split('_')]
 
 
 # Production / consumption nodes
 
 production = {}
 consumption = {}
-for node in json_input['nodes']:
-    if node.get('Type') == 'Source':
-        production[id2str(node['id'])] = {
-            # TODO: Get that from JSON
-            'technologies': {
-                'k1': {
-                    'C_Hprod_unit': 800,
-                    'C_heat_unit': 0.08,
-                    'Eff': 0.9,
-                    'rate_i': 0.04,
-                    'T_prod_out_max': 100,
-                    'T_prod_in_min': 30,
-                },
+for node in json_input['nodes']['production']:
+    production[id2str(node['id'])] = {
+        # TODO: Get that from JSON
+        'technologies': {
+            'k1': {
+                'C_Hprod_unit': 800,
+                'C_heat_unit': 0.08,
+                'Eff': 0.9,
+                'rate_i': 0.04,
+                'T_prod_out_max': 100,
+                'T_prod_in_min': 30,
             },
-        }
-    else:
-        consumption[id2str(node['id'])] = {
-            'H_req': node['kW'],
-            'T_req_out': node['Tout'],
-            'T_req_in': node['Tin'],
-        }
+        },
+    }
+for node in json_input['nodes']['consumption']:
+    consumption[id2str(node['id'])] = {
+        'H_req': node['kW'],
+        'T_req_out': node['Tout'],
+        'T_req_in': node['Tin'],
+    }
 
 
 # Configuration
@@ -127,20 +130,22 @@ print('Termination condition:', result['termination_condition'])
 
 configuration_out = result['solution']
 
-nodes = [
-    {
-        'id': str2id(prod_id),
-        'Type': 'Source',
-        **values
-    }
-    for prod_id, values in configuration_out['production'].items()
-] + [
-    {
-        'id': str2id(cons_id),
-        **values
-    }
-    for cons_id, values in configuration_out['consumption'].items()
-]
+nodes = {
+    'production': [
+        {
+            'id': str2id(prod_id),
+            **values
+        }
+        for prod_id, values in configuration_out['production'].items()
+    ],
+    'consumption': [
+        {
+            'id': str2id(cons_id),
+            **values
+        }
+        for cons_id, values in configuration_out['consumption'].items()
+    ],
+}
 
 links = [
     {
