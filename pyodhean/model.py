@@ -56,14 +56,14 @@ class Model:
         # Production
         prod_mapping = {
             'flow_rate': 'M_prod_tot',
-            'supply_temperature': 'T_prod_tot_in',
-            'return_temperature': 'T_prod_tot_out',
+            't_supply': 'T_prod_tot_in',
+            't_return': 'T_prod_tot_out',
             'pump_pressure': 'P_pump',
         }
         prod_techno_mapping = {
             'flow_rate': 'M_prod',
-            'supply_temperature': 'T_prod_in',
-            'return_temperature': 'T_prod_out',
+            't_supply': 'T_prod_in',
+            't_return': 'T_prod_out',
             'power': 'H_inst',
         }
         production = {
@@ -90,15 +90,15 @@ class Model:
             'flow_rate_in_exchanger': 'M_hx',
             'flow_rate_before_exchanger': 'M_supply',
             'flow_rate_after_exchanger': 'M_return',
-            'exchanger_input_temperature': 'T_hx_in',
-            'exchanger_output_temperature': 'T_hx_out',
-            'exchanger_supply_temperature': 'T_supply',
-            'exchanger_return_temperature': 'T_return',
+            'exchanger_power': 'H_hx',
+            'exchanger_surface': 'A_hx',
+            'exchanger_t_in': 'T_hx_in',
+            'exchanger_t_out': 'T_hx_out',
+            'exchanger_t_supply': 'T_supply',
+            'exchanger_t_return': 'T_return',
             'exchanger_DTLM': 'DTLM',
             'exchanger_delta_t_hot': 'DT1',
             'exchanger_delta_t_cold': 'DT2',
-            'exchanger_surface': 'A_hx',
-            'exchanger_power': 'H_hx',
         }
         consumption = {
             cons_id: {
@@ -116,10 +116,10 @@ class Model:
             'diameter_int': 'Dint_CC_parallel',
             'diameter_out': 'Dout_CC_parallel',
             'flow_rate': 'M_lineCC_parallel',
-            'supply_in': 'T_lineCC_parallel_in',
-            'supply_out': 'T_lineCC_parallel_out',
-            'return_in': 'T_lineCC_return_in',
-            'return_out': 'T_lineCC_return_out',
+            't_supply_in': 'T_lineCC_parallel_in',
+            't_supply_out': 'T_lineCC_parallel_out',
+            't_return_in': 'T_lineCC_return_in',
+            't_return_out': 'T_lineCC_return_out',
         }
         cons_cons_pipes = {
             ccp: {
@@ -136,12 +136,12 @@ class Model:
             'diameter_int': 'Dint_PC',
             'diameter_out': 'Dout_PC',
             'flow_rate': 'M_linePC',
-            'supply_in': 'T_linePC_in',
-            'supply_out': 'T_linePC_out',
+            't_supply_in': 'T_linePC_in',
+            't_supply_out': 'T_linePC_out',
         }
         prod_cons_mapping_CP = {
-            'return_in': 'T_lineCP_in',
-            'return_out': 'T_lineCP_out',
+            't_return_in': 'T_lineCP_in',
+            't_return_out': 'T_lineCP_out',
         }
         prod_cons_pipes = {
             pcp: {
