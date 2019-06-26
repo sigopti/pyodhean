@@ -160,14 +160,14 @@ class Model:
 
         # Global indicators
         globals_mapping = {
-            'Pumps operation cost': 'C_pump',
-            'Heat production cost': 'C_heat',
-            'Production intallation cost': 'C_Hinst',
-            'Exchangers installation cost': 'C_hx',
-            'Network cost (pipes + trenches)': 'C_line_tot',
-            'Pipes cost': 'C_pipe',
-            'Trenches cost': 'C_tr',
-            'Network length (supply + return)': 'L_tot',
+            'pumps_operation_cost': 'C_pump',
+            'heat_production_cost': 'C_heat',
+            'production_intallation_cost': 'C_Hinst',
+            'exchangers_installation_cost': 'C_hx',
+            'network_cost': 'C_line_tot',
+            'pipes_cost': 'C_pipe',
+            'trenches_cost': 'C_tr',
+            'network_length': 'L_tot',
         }
         global_indicators = {
             k: pe.value(getattr(self.model, v))
