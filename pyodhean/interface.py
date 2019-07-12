@@ -88,7 +88,7 @@ class JSONInterface:
     @staticmethod
     def _parse_result(result):
 
-        if not result['success']:
+        if 'solution' not in result:
             return result
 
         configuration_out = result['solution']

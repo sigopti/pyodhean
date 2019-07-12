@@ -37,16 +37,11 @@ class Model:
         # Load solutions only on success to avoid a warning
         kwargs.setdefault('load_solutions', False)
         result = opt.solve(self.model, **kwargs)
-        success = (
-            result.solver.status == po.SolverStatus.ok and
-            result.solver.termination_condition == po.TerminationCondition.optimal
-        )
+        status = result.solver.status
         ret = {
-            'success': success,
-            'status': str(result.solver.status),
-            'termination_condition': str(result.solver.termination_condition),
+            'status': str(status),
         }
-        if success:
+        if status == po.SolverStatus.ok:
             self.model.solutions.load_from(result)
             ret['solution'] = self._get_solution()
         return ret

@@ -50,6 +50,7 @@ json_input = {
 # Test solver success
 solver = JSONInterface(options)
 json_output = solver.solve(json_input, tee=False, keepfiles=False)
+assert json_output['status'] == 'ok'
 pprint(json_output)
 
 
@@ -57,6 +58,4 @@ pprint(json_output)
 options['max_iter'] = 2
 solver = JSONInterface(options)
 json_output = solver.solve(json_input, tee=False, keepfiles=False)
-assert json_output['success'] is False
 assert json_output['status'] == 'warning'
-assert json_output['termination_condition'] == 'maxIterations'

@@ -127,10 +127,7 @@ model = Model(
 # [tee] Display iterations (default: False)
 # [keepfiles] Keep .nl/.sol/.log files (default: False)
 result = model.solve('ipopt', options, tee=False, keepfiles=False)
-
-print('Success:', result['success'])
-print('Status:', result['status'])
-print('Termination condition:', result['termination_condition'])
+assert result['status'] == 'ok'
 
 # Parse output
 
@@ -178,11 +175,4 @@ pprint(json_output)
 
 options['max_iter'] = 2
 result = model.solve('ipopt', options, tee=False, keepfiles=False)
-
-print('success:', result['success'])
-print('status:', result['status'])
-print('termination condition:', result['termination_condition'])
-
-assert result['success'] is False
 assert result['status'] == 'warning'
-assert result['termination_condition'] == 'maxIterations'
