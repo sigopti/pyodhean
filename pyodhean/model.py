@@ -342,12 +342,6 @@ class Model:
         self.model.rho = pe.Param(
             initialize=general_parameters['rho'],
             doc="'masse volumique de l'eau a 20°C (kg/m3)")
-        self.model.alpha = pe.Param(
-            initialize=general_parameters['alpha'],
-            doc='exposant pour le calcul des pertes de charge et le calcul du coût de pompage')
-        self.model.beta = pe.Param(
-            initialize=general_parameters['beta'],
-            doc='exposant pour le calcul des pertes de charge et le calcul du coût de pompage')
         self.model.C_pipe_unit_a = pe.Param(
             initialize=general_parameters['C_pipe_unit_a'],
             doc=('coefficient directeur de la relation linéaire du coût de la canalisation '
@@ -365,31 +359,12 @@ class Model:
         self.model.rate_a = pe.Param(
             initialize=general_parameters['rate_a'],
             doc="taux d'actualisation pour le calcul de l'annuite des investissements initiaux")
-        self.model.T_ext = pe.Param(
-            initialize=general_parameters['T_ext'],
-            doc='température extérieure pour le calcul des pertes thermiques de la canalisation')
-        self.model.lambda_insul = pe.Param(
-            initialize=general_parameters['lambda_insul'],
-            doc="conductivite thermique de l'isolant (W/m.K)")
-        self.model.lambda_soil = pe.Param(
-            initialize=general_parameters['lambda_soil'],
-            doc='conductivite thermique du sol (W/m.K)')
-        self.model.z_pipe = pe.Param(
-            initialize=general_parameters['z_pipe'],
-            doc=('hauteur de sol au dessus des canalisations pour le calcul des '
-                 'pertes thermiques (m)'))
-        self.model.epsilon = pe.Param(
-            initialize=general_parameters['epsilon'],
-            doc='chiffre infinitesimal utile pour éviter les erreurs de division par zero')
         self.model.tk_insul = pe.Param(
             initialize=general_parameters['tk_insul'],
             doc="épaisseur de l'isolant autour de la canalisation (m)")
         self.model.tk_pipe = pe.Param(
             initialize=general_parameters['tk_pipe'],
             doc='épaisseur de metal dependant du diametre (m)')
-        self.model.DP_hx_unit = pe.Param(
-            initialize=general_parameters['DP_hx_unit'],
-            doc='perte de charge dans un echangeur (kPa)')
         # bornes
         self.model.V_min = pe.Param(
             initialize=general_parameters['V_min'],
@@ -397,9 +372,6 @@ class Model:
         self.model.V_max = pe.Param(
             initialize=general_parameters['V_max'],
             doc="borne vitesse max, 3m/s d'après Techniques de l'Ingénieur (m/s)")
-        self.model.P_min = pe.Param(
-            initialize=general_parameters['P_min'],
-            doc='pression minimale en borne inférieure (kPa)')
         self.model.P_max = pe.Param(
             initialize=general_parameters['P_max'],
             doc='pression max en borne supérieure (kPa)')
@@ -409,9 +381,6 @@ class Model:
         self.model.Dint_min = pe.Param(
             initialize=general_parameters['Dint_min'],
             doc='diamètre interieur max du tuyau (m)')
-        self.model.Dist_max_autorisee = pe.Param(
-            initialize=general_parameters['Dist_max_autorisee'],
-            doc='distance max pour borner les longueurs de canalisations (m)')
 
         # Valeur calculée
 
@@ -491,52 +460,6 @@ class Model:
             """calcul du diamètre minimum de canalisation"""
             return model.Dint_min + model.tk_insul + model.tk_pipe
         self.model.Dout_min = pe.Param(initialize=calcul_Dout_min)
-
-        def calcul_R_insul_max(model):
-            """calcul de la résistance maximale de l'épaisseur d'isolant"""
-            return (
-                model.Dint_max /
-                (2 * model.lambda_insul) *
-                pe.log(model.Dout_max / model.Dint_max)
-            )
-        self.model.R_insul_max = pe.Param(initialize=calcul_R_insul_max)
-
-        def calcul_R_insul_min(model):
-            """calcul de la résistance minimale de l'épaisseur d'isolant"""
-            return (
-                model.Dint_min /
-                (2 * model.lambda_insul) *
-                pe.log(model.Dout_min / model.Dint_min)
-            )
-        self.model.R_insul_min = pe.Param(initialize=calcul_R_insul_min)
-
-        def calcul_R_soil_max(model):
-            """calcul de la résistance maximale du sol au dessus des canalisations"""
-            return (
-                model.Dint_max /
-                (2 * model.lambda_soil) *
-                pe.log(4 * model.z_pipe / model.Dout_max)
-            )
-        self.model.R_soil_max = pe.Param(initialize=calcul_R_soil_max)
-
-        def calcul_R_soil_min(model):
-            """calcul de la résistance minimale du sol au dessus des canalisations"""
-            return (
-                model.Dint_min /
-                (2 * model.lambda_soil) *
-                pe.log(4 * model.z_pipe / model.Dout_min)
-            )
-        self.model.R_soil_min = pe.Param(initialize=calcul_R_soil_min)
-
-        def calcul_R_tot_max(model):
-            """calcul de la résistance totale maximale"""
-            return model.R_insul_max + model.R_soil_max
-        self.model.R_tot_max = pe.Param(initialize=calcul_R_tot_max)
-
-        def calcul_R_tot_min(model):
-            """calcul de la résistance totale minimale"""
-            return model.R_insul_min + model.R_soil_min
-        self.model.R_tot_min = pe.Param(initialize=calcul_R_tot_min)
 
         def calcul_T_init_min(model):
             """Température minimale pour les températures de départ/entrée
