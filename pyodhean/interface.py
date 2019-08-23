@@ -28,7 +28,8 @@ class JSONInterface:
         :param dict json_input: Problem description in JSON form
         """
         problem = self._define_problem(json_input)
-        result = self._do_solve(problem, **kwargs)
+        model = Model(**problem)
+        result = model.solve('ipopt', self.options, **kwargs)
         return self._parse_result(result)
 
     @staticmethod
@@ -129,7 +130,3 @@ class JSONInterface:
         }
 
         return result
-
-    def _do_solve(self, problem, **kwargs):
-        model = Model(**problem)
-        return model.solve('ipopt', self.options, **kwargs)
