@@ -307,79 +307,79 @@ class Model:
         # Parameters
 
         self.model.C_tr_unit = pe.Param(
-            initialize=general_parameters['C_tr_unit'],
+            initialize=general_parameters['trench_unit_cost'],
             doc='coût unitaire de tranchee aller-retour (€/ml)')
         self.model.period = pe.Param(
-            initialize=general_parameters['period'],
+            initialize=general_parameters['operation_time'],
             doc='durée de fonctionnement annuelle du RCU (h)')
         self.model.depreciation_period = pe.Param(
             initialize=general_parameters['depreciation_period'],
             doc="duree d'amortissement (année)")
         self.model.rate_i_pump = pe.Param(
-            initialize=general_parameters['rate_i_pump'],
+            initialize=general_parameters['pump_energy_cost_inflation_rate'],
             doc="inflation du coût de l'électricite pour le pompage (%)")
 
         # Définition des paramètres ne dépendant pas de la taille du problème
         # Valeur affectée
         self.model.Eff_pump = pe.Param(
-            initialize=general_parameters['Eff_pump'],
+            initialize=general_parameters['pump_efficiency'],
             doc='rendement de la pompe pour le calcul du coût de pompage(%)')
         self.model.T_hx_pinch = pe.Param(
-            initialize=general_parameters['T_hx_pinch'],
+            initialize=general_parameters['exchanger_t_pinch_min'],
             doc="température de pincement minimum a l'échangeur (°C)")
         self.model.K_hx = pe.Param(
-            initialize=general_parameters['K_hx'],
+            initialize=general_parameters['exchanger_overall_transfer_coefficient'],
             doc="coefficient global d'échange (kW/m2.K)")
         self.model.Cp = pe.Param(
-            initialize=general_parameters['Cp'],
+            initialize=general_parameters['water_cp'],
             doc="capacite thermique de l'eau à 80°C (kJ/kg.K)")
         self.model.C_pump_unit = pe.Param(
-            initialize=general_parameters['C_pump_unit'],
+            initialize=general_parameters['pump_energy_unit_cost'],
             doc="coût unitaire de l'électricite pour le pompage (€/kWh)")
         self.model.mu = pe.Param(
-            initialize=general_parameters['mu'],
+            initialize=general_parameters['water_mu'],
             doc="viscosite de l'eau a 80°C (Pa.s)")
         self.model.rho = pe.Param(
-            initialize=general_parameters['rho'],
+            initialize=general_parameters['water_rho'],
             doc="'masse volumique de l'eau a 20°C (kg/m3)")
         self.model.C_pipe_unit_a = pe.Param(
-            initialize=general_parameters['C_pipe_unit_a'],
+            initialize=general_parameters['pipe_diameter_unit_cost_slope'],
             doc=('coefficient directeur de la relation linéaire du coût de la canalisation '
                  'selon le diamètre (ensemble tuyau+isolant)(€/m)'))
         self.model.C_pipe_unit_b = pe.Param(
-            initialize=general_parameters['C_pipe_unit_b'],
+            initialize=general_parameters['pipe_diameter_unit_cost_y_intercept'],
             doc=("ordonnée à l'origine de la relation linéaire du coût de la canalisation "
                  "selon le diamètre (ensemble tuyau+isolant)(€)"))
         self.model.C_hx_unit_a = pe.Param(
-            initialize=general_parameters['C_hx_unit_a'],
+            initialize=general_parameters['exchanger_power_cost_slope'],
             doc="coefficient directeur du coût unitaire de l'echangeur (€/kW )")
         self.model.C_hx_unit_b = pe.Param(
-            initialize=general_parameters['C_hx_unit_b'],
+            initialize=general_parameters['exchanger_power_cost_y_intercept'],
             doc="ordonnee à l'origine du coût unitaire de l'echangeur (€)")
         self.model.rate_a = pe.Param(
-            initialize=general_parameters['rate_a'],
+            initialize=general_parameters['discout_rate'],
             doc="taux d'actualisation pour le calcul de l'annuite des investissements initiaux")
         self.model.tk_insul = pe.Param(
-            initialize=general_parameters['tk_insul'],
+            initialize=general_parameters['pipe_insulation_thickness'],
             doc="épaisseur de l'isolant autour de la canalisation (m)")
         self.model.tk_pipe = pe.Param(
-            initialize=general_parameters['tk_pipe'],
+            initialize=general_parameters['pipe_thickness'],
             doc='épaisseur de metal dependant du diametre (m)')
         # bornes
         self.model.V_min = pe.Param(
-            initialize=general_parameters['V_min'],
+            initialize=general_parameters['speed_min'],
             doc="borne vitesse min, 0.1m/s d'après Techniques de l'Ingénieur (m/s)")
         self.model.V_max = pe.Param(
-            initialize=general_parameters['V_max'],
+            initialize=general_parameters['speed_max'],
             doc="borne vitesse max, 3m/s d'après Techniques de l'Ingénieur (m/s)")
         self.model.P_max = pe.Param(
-            initialize=general_parameters['P_max'],
+            initialize=general_parameters['pressure_max'],
             doc='pression max en borne supérieure (kPa)')
         self.model.Dint_max = pe.Param(
-            initialize=general_parameters['Dint_max'],
+            initialize=general_parameters['diameter_int_max'],
             doc='diamètre interieur max du tuyau (m)')
         self.model.Dint_min = pe.Param(
-            initialize=general_parameters['Dint_min'],
+            initialize=general_parameters['diameter_int_min'],
             doc='diamètre interieur max du tuyau (m)')
 
         # Valeur calculée
