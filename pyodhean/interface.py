@@ -80,10 +80,14 @@ class JSONInterface:
             'cons_cons_pipes': cons_cons_pipes,
         }
 
+        # General parameters
+        general_parameters = json_input.get('parameters', {})
+
         return {
             'production': production,
             'consumption': consumption,
             'configuration': configuration,
+            'general_parameters': general_parameters,
         }
 
     @staticmethod
