@@ -8,8 +8,6 @@ DEFAULT_PARAMETERS = {
     'water_mu': 0.000354,
     # masse volumique de l'eau a 20°C (kg/m3)
     'water_rho': 974,
-    # pression max en borne supérieure (kPa)
-    'pressure_max': 500,
     # borne vitesse min, 0.1m/s d'après Techniques de l'Ingénieur (m/s)
     'speed_min': 0.1,
     # borne vitesse max, 3m/s d'après Techniques de l'Ingénieur (m/s)
@@ -26,8 +24,6 @@ DEFAULT_PARAMETERS = {
     'exchanger_overall_transfer_coefficient': 20,
     # température de pincement minimum a l'échangeur (°C)
     'exchanger_t_pinch_min': 5,
-    # rendement de la pompe pour le calcul du coût de pompage(%)
-    'pump_efficiency': 0.7,
     # durée de fonctionnement annuelle du RCU (h)
     'operation_time': 5808,
     # duree d'amortissement (année)
@@ -46,8 +42,6 @@ DEFAULT_PARAMETERS = {
     'exchanger_power_cost_slope': 5.3,
     # ordonnee à l'origine du coût unitaire de l'echangeur (€)
     'exchanger_power_cost_y_intercept': 5045,
-    # coût unitaire de l'électricite pour le pompage (€/kWh)
-    'pump_energy_unit_cost': 0.11,
-    # inflation du coût de l'électricite pour le pompage (%)
-    'pump_energy_cost_inflation_rate': 0.04,
+    # ratio coût de pompage/coût global
+    'pump_energy_ratio_cost': 0.01,
 }

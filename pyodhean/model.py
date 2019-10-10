@@ -53,7 +53,6 @@ class Model:
             'flow_rate': 'M_prod_tot',
             't_supply': 'T_prod_tot_in',
             't_return': 'T_prod_tot_out',
-            'pump_pressure': 'P_pump',
         }
         prod_techno_mapping = {
             'flow_rate': 'M_prod',
@@ -315,15 +314,9 @@ class Model:
         self.model.depreciation_period = pe.Param(
             initialize=general_parameters['depreciation_period'],
             doc="duree d'amortissement (année)")
-        self.model.rate_i_pump = pe.Param(
-            initialize=general_parameters['pump_energy_cost_inflation_rate'],
-            doc="inflation du coût de l'électricite pour le pompage (%)")
 
         # Définition des paramètres ne dépendant pas de la taille du problème
         # Valeur affectée
-        self.model.Eff_pump = pe.Param(
-            initialize=general_parameters['pump_efficiency'],
-            doc='rendement de la pompe pour le calcul du coût de pompage(%)')
         self.model.T_hx_pinch = pe.Param(
             initialize=general_parameters['exchanger_t_pinch_min'],
             doc="température de pincement minimum a l'échangeur (°C)")
@@ -333,9 +326,9 @@ class Model:
         self.model.Cp = pe.Param(
             initialize=general_parameters['water_cp'],
             doc="capacite thermique de l'eau à 80°C (kJ/kg.K)")
-        self.model.C_pump_unit = pe.Param(
-            initialize=general_parameters['pump_energy_unit_cost'],
-            doc="coût unitaire de l'électricite pour le pompage (€/kWh)")
+        self.model.C_pump_ratio = pe.Param(
+            initialize=general_parameters['pump_energy_ratio_cost'],
+            doc="ratio coût de pompage/coût global")
         self.model.mu = pe.Param(
             initialize=general_parameters['water_mu'],
             doc="viscosite de l'eau a 80°C (Pa.s)")
@@ -372,9 +365,6 @@ class Model:
         self.model.V_max = pe.Param(
             initialize=general_parameters['speed_max'],
             doc="borne vitesse max, 3m/s d'après Techniques de l'Ingénieur (m/s)")
-        self.model.P_max = pe.Param(
-            initialize=general_parameters['pressure_max'],
-            doc='pression max en borne supérieure (kPa)')
         self.model.Dint_max = pe.Param(
             initialize=general_parameters['diameter_int_max'],
             doc='diamètre interieur max du tuyau (m)')
@@ -412,15 +402,6 @@ class Model:
                 (1 - (1 + model.rate_a) * (1 + model.rate_i[k]))
             )
         self.model.f_opex = pe.Param(self.model.k, initialize=calcul_f_opex)
-
-        def calcul_f_opex_pump(model):
-            """idem pour la pompe, alimentée en électricité"""
-            dep = model.depreciation_period
-            return (
-                (1 - (1 + model.rate_a)**dep * (1 + model.rate_i_pump)**dep) /
-                (1 - (1 + model.rate_a) * (1 + model.rate_i_pump))
-            )
-        self.model.f_opex_pump = pe.Param(initialize=calcul_f_opex_pump)
 
         def calcul_f_capex(model):
             """Facteur multiplicateur pour le calcul du coût d'investissement
@@ -707,11 +688,6 @@ class Model:
             self.model.j, initialize=A_hx_init, bounds=A_hx_borne,
             doc="Surface de l'échangeur pour chaque consommateur j, bornée par le pincement "
             "T_hx_pinch ==> cf calcul de A_hx_borne")
-
-        # Pressions pour le coût_pompage
-        self.model.P_pump = pe.Var(
-            self.model.i, initialize=0, bounds=(0, self.model.P_max),
-            doc='Pressions de pompage (Pa)')
 
         # Puissances installées
         self.model.H_inst = pe.Var(
@@ -1241,9 +1217,7 @@ class Model:
         def cout_pompage_rule(model):
             """Coût de pompage"""
             return model.C_pump == (
-                1.e-6 * model.f_opex_pump * model.C_pump_unit * model.period * sum(
-                    model.P_pump[i] * model.M_prod_tot[i] for i in model.i) *
-                model.Eff_pump / model.rho
+                model.C_pump_ratio * (model.C_heat + model.C_Hinst + model.C_hx + model.C_line_tot)
             )
         self.model.cout_pompage = pe.Constraint(rule=cout_pompage_rule)
 
@@ -1319,5 +1293,5 @@ class Model:
 
         def objective_rule(model):
             """Sommes des termes coût"""
-            return model.C_pump + model.C_heat + model.C_Hinst + model.C_hx + model.C_line_tot
+            return model.C_heat + model.C_Hinst + model.C_hx + model.C_line_tot
         self.model.objective = pe.Objective(rule=objective_rule, sense=pe.minimize)
