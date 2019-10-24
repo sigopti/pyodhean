@@ -21,7 +21,7 @@ DEFAULT_PARAMETERS = {
     # épaisseur de l'isolant autour de la canalisation (m)
     'pipe_insulation_thickness': 0.0276,
     # coefficient global d'échange (kW/m2.K)
-    'exchanger_overall_transfer_coefficient': 20,
+    'exchanger_overall_transfer_coefficient': 2,
     # température de pincement minimum a l'échangeur (°C)
     'exchanger_t_pinch_min': 5,
     # durée de fonctionnement annuelle du RCU (h)
