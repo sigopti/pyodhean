@@ -39,13 +39,13 @@ production = {
 consumption = {
     'C1': {
         'H_req': 80,
-        'T_req_out': 60,
-        'T_req_in': 80,
+        'T_req_out': 80,
+        'T_req_in': 60,
     },
     'C2': {
         'H_req': 80,
-        'T_req_out': 60,
-        'T_req_in': 80,
+        'T_req_out': 80,
+        'T_req_in': 60,
     },
 }
 
