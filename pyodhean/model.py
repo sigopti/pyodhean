@@ -1293,5 +1293,9 @@ class Model:
 
         def objective_rule(model):
             """Sommes des termes coût"""
-            return model.C_heat + model.C_Hinst + model.C_hx + model.C_line_tot
+            return (
+                model.C_heat + model.C_Hinst + model.C_hx + model.C_line_tot +
+                # XXX: Adding rate flows to costs
+                sum(model.M_prod_tot[i] for i in model.i)
+            )
         self.model.objective = pe.Objective(rule=objective_rule, sense=pe.minimize)
