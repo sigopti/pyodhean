@@ -357,7 +357,13 @@ class Model:
             doc="épaisseur de l'isolant autour de la canalisation (m)")
         self.model.tk_pipe = pe.Param(
             initialize=general_parameters['pipe_thickness'],
-            doc='épaisseur de metal dependant du diametre (m)')
+            doc="épaisseur de metal dependant du diametre (m)")
+        self.model.main_prod_rate = pe.Param(
+            initialize=general_parameters['main_prod_rate'],
+            doc="taux d'utilisation de la chaudière principale")
+        self.model.simultaneity_rate = pe.Param(
+            initialize=general_parameters['simultaneity_ratio'],
+            doc="taux de foisonnement")
         # bornes
         self.model.V_min = pe.Param(
             initialize=general_parameters['speed_min'],
@@ -1111,7 +1117,7 @@ class Model:
             Inéquation 1 du bigM
             """
             return (
-                model.H_inst[i, k] * model.Eff[k] <=
+                model.H_inst[i, k] * model.Eff[k] / model.simultaneity_rate <=
                 model.M_prod[i, k] * model.Cp * (model.T_prod_out[i, k] - model.T_prod_in[i, k]) +
                 model.H_inst_bigM * (1 - model.Y_P[i, k])
             )
@@ -1121,7 +1127,7 @@ class Model:
         def bilan_H_inst_rule_bigM2(model, i, k):
             """..... Inéquation 2 du bigM"""
             return (
-                model.H_inst[i, k] * model.Eff[k] >=
+                model.H_inst[i, k] * model.Eff[k] / model.simultaneity_rate >=
                 model.M_prod[i, k] * model.Cp * (model.T_prod_out[i, k] - model.T_prod_in[i, k]) -
                 model.H_inst_bigM * (1 - model.Y_P[i, k])
             )
@@ -1211,6 +1217,16 @@ class Model:
             return model.H_hx[j] == model.H_req[j]
         self.model.contrainte_appro = pe.Constraint(self.model.j, rule=contrainte_appro_rule)
 
+        # Contrainte sur la couverture
+        def contrainte_coverage_rule(model, i):
+            """Taux de couverture de la production principale"""
+            return model.H_inst[i, i + '/k2'] == (
+                (1 - model.main_prod_rate) *
+                (model.H_inst[i, i + '/k1'] + model.H_inst[i, i + '/k2'])
+            )
+        self.model.contrainte_coverage = pe.Constraint(
+            self.model.i, rule=contrainte_coverage_rule)
+
         # Objective
 
         # Termes de la fonction coût
@@ -1224,7 +1240,7 @@ class Model:
         def cout_heat_rule(model):
             """Coût de la chaleur livrée"""
             return model.C_heat == (
-                1.e-6 * model.period * sum(
+                1.e-6 * model.period * model.simultaneity_rate * sum(
                     model.f_opex[k] * model.C_heat_unit[k] * model.H_inst[i, k]
                     for i in model.i for k in model.k)
             )
@@ -1234,7 +1250,7 @@ class Model:
             """Coût de la puissance installée en chaufferie"""
             return model.C_Hinst == (
                 1.e-6 * model.f_capex * sum(
-                    model.C_Hprod_unit[k] * model.H_inst[i, k]
+                    model.C_Hprod_unit[k] * sum(model.H_inst[i, k] for k in model.k)
                     for i in model.i for k in model.k)
             )
         self.model.cout_puissance = pe.Constraint(rule=cout_puissance_rule)

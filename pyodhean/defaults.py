@@ -44,4 +44,8 @@ DEFAULT_PARAMETERS = {
     'exchanger_power_cost_y_intercept': 5045,
     # ratio coût de pompage/coût global
     'pump_energy_ratio_cost': 0.01,
+    # taux d'utilisation de la chaudière principale
+    'main_prod_rate': 0.80,
+    # taux de foisonnement
+    'simultaneity_ratio': 0.70,
 }

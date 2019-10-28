@@ -24,6 +24,14 @@ json_input = {
                         'energy_unitary_cost': 0.08,
                         'energy_cost_inflation_rate': 0.04,
                     },
+                    'k2': {
+                        'efficiency': 0.9,
+                        't_out_max': 100,
+                        't_in_min': 30,
+                        'production_unitary_cost': 1000,
+                        'energy_unitary_cost': 0.08,
+                        'energy_cost_inflation_rate': 0.04,
+                    },
                 },
             },
         ],
@@ -46,7 +54,7 @@ json_input = {
     ],
     'parameters': {
         'diameter_int_min': 0.10,
-        'speed_max': 2,
+        'speed_max': 2.5,
     },
 }
 
