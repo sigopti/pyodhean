@@ -51,13 +51,13 @@ class Model:
         # Production
         prod_mapping = {
             'flow_rate': 'M_prod_tot',
-            't_supply': 'T_prod_tot_in',
-            't_return': 'T_prod_tot_out',
+            't_supply': 'T_prod_tot_out',
+            't_return': 'T_prod_tot_in',
         }
         prod_techno_mapping = {
             'flow_rate': 'M_prod',
-            't_supply': 'T_prod_in',
-            't_return': 'T_prod_out',
+            't_supply': 'T_prod_out',
+            't_return': 'T_prod_in',
             'power': 'H_inst',
         }
         production = {
