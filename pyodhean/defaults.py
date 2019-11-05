@@ -48,4 +48,8 @@ DEFAULT_PARAMETERS = {
     'main_prod_rate': 0.80,
     # taux de foisonnement
     'simultaneity_ratio': 0.70,
+    # taux de pertes thermiques
+    'heat_loss_rate': 0.05,
+    # pertes thermiques linéaires (°C/m)
+    'linear_heat_loss': 0.002,
 }

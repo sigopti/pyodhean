@@ -364,6 +364,13 @@ class Model:
         self.model.simultaneity_rate = pe.Param(
             initialize=general_parameters['simultaneity_ratio'],
             doc="taux de foisonnement")
+        self.model.heat_loss_rate = pe.Param(
+            initialize=general_parameters['heat_loss_rate'],
+            doc="taux de pertes thermiques pour le calcul de C_heat ")
+        self.model.linear_heat_loss = pe.Param(
+            initialize=general_parameters['linear_heat_loss'],
+            doc="pertes thermiques linéaires (°C/m) pour les équations Def loss_linePC, CP, CC...")
+
         # bornes
         self.model.V_min = pe.Param(
             initialize=general_parameters['speed_min'],
@@ -1191,23 +1198,35 @@ class Model:
         # Pertes thermiques (ici négligées car T_in = T_out)
         def loss_linePC_rule(model, i, j):
             """Pertes thermiques sur les conduites entre producteur et consommateur - ALLER"""
-            return model.T_linePC_out[i, j] == model.T_linePC_in[i, j]
+            return model.T_linePC_out[i, j] == (
+                model.T_linePC_in[i, j] -
+                model.linear_heat_loss * model.L_PC[i, j]
+            )
         self.model.loss_linePC = pe.Constraint(self.model.i, self.model.j, rule=loss_linePC_rule)
 
         def loss_lineCP_rule(model, j, i):
             """Pertes thermiques sur les conduites entre producteur et consommateur - RETOUR"""
-            return model.T_lineCP_out[j, i] == model.T_lineCP_in[j, i]
+            return model.T_lineCP_out[j, i] == (
+                model.T_lineCP_in[j, i] -
+                model.linear_heat_loss * model.L_CP[j, i]
+            )
         self.model.loss_lineCP = pe.Constraint(self.model.j, self.model.i, rule=loss_lineCP_rule)
 
         def loss_lineCC_parallel_rule(model, j, o):
             """Pertes thermiques sur les conduites entre consommateur - ALLER"""
-            return model.T_lineCC_parallel_out[j, o] == model.T_lineCC_parallel_in[j, o]
+            return model.T_lineCC_parallel_out[j, o] == (
+                model.T_lineCC_parallel_in[j, o] -
+                model.linear_heat_loss * model.L_CC_parallel[j, o]
+            )
         self.model.loss_lineCC_parallel = pe.Constraint(
             self.model.j, self.model.o, rule=loss_lineCC_parallel_rule)
 
         def loss_lineCC_return_rule(model, o, j):
             """Pertes thermiques sur les conduites entre consommateurs - RETOUR"""
-            return model.T_lineCC_return_out[o, j] == model.T_lineCC_return_in[o, j]
+            return model.T_lineCC_return_out[o, j] == (
+                model.T_lineCC_return_in[o, j] -
+                model.linear_heat_loss * model.L_CC_return[j, o]
+            )
         self.model.loss_lineCC_return = pe.Constraint(
             self.model.o, self.model.j, rule=loss_lineCC_return_rule)
 
@@ -1240,7 +1259,7 @@ class Model:
         def cout_heat_rule(model):
             """Coût de la chaleur livrée"""
             return model.C_heat == (
-                1.e-6 * model.period * model.simultaneity_rate * sum(
+                1.e-6 * model.period * model.simultaneity_rate * (1 + model.heat_loss_rate) * sum(
                     model.f_opex[k] * model.C_heat_unit[k] * model.H_inst[i, k]
                     for i in model.i for k in model.k)
             )
