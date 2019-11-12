@@ -218,6 +218,9 @@ class Model:
         self.model.T_prod_in_min = pe.Param(
             self.model.k, initialize=pluck(technologies, 'T_prod_in_min'),
             doc='température min autorisée en entree de chaudiere de la techno k (°C)')
+        self.model.coverage_rate = pe.Param(
+            self.model.k, initialize=pluck(technologies, 'coverage_rate'),
+            doc='taux de couverture de la techno k')
         self.model.Y_P = pe.Param(
             self.model.i, self.model.k, initialize=technos_per_prod,
             doc='Existence techno k au lieu de production Pi')
@@ -358,9 +361,6 @@ class Model:
         self.model.tk_pipe = pe.Param(
             initialize=general_parameters['pipe_thickness'],
             doc="épaisseur de metal dependant du diametre (m)")
-        self.model.main_prod_rate = pe.Param(
-            initialize=general_parameters['main_prod_rate'],
-            doc="taux d'utilisation de la chaudière principale")
         self.model.simultaneity_rate = pe.Param(
             initialize=general_parameters['simultaneity_ratio'],
             doc="taux de foisonnement")
@@ -1229,14 +1229,14 @@ class Model:
         self.model.contrainte_appro = pe.Constraint(self.model.j, rule=contrainte_appro_rule)
 
         # Contrainte sur la couverture
-        def contrainte_coverage_rule(model, i):
+        def contrainte_coverage_rule(model, i, k):
             """Taux de couverture de la production principale"""
-            return model.H_inst[i, i + '/k2'] == (
-                (1 - model.main_prod_rate) *
-                (model.H_inst[i, i + '/k1'] + model.H_inst[i, i + '/k2'])
-            )
+            if model.coverage_rate[k] is None:
+                return pe.Constraint.Feasible
+            return model.H_inst[i, k] == (
+                model.coverage_rate[k] * sum(model.H_inst[i, k] for k in model.k))
         self.model.contrainte_coverage = pe.Constraint(
-            self.model.i, rule=contrainte_coverage_rule)
+            self.model.i, self.model.k, rule=contrainte_coverage_rule)
 
         # Objective
 

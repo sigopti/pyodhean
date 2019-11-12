@@ -47,6 +47,7 @@ class JSONInterface:
                     'C_Hprod_unit': techno['production_unitary_cost'],
                     'C_heat_unit': techno['energy_unitary_cost'],
                     'rate_i': techno['energy_cost_inflation_rate'],
+                    'coverage_rate': techno.get('coverage_rate'),
                 }
             production[_id2str(node['id'])] = {'technologies': technologies}
         consumption = {}

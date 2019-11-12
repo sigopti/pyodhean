@@ -35,6 +35,7 @@ production = {
                 'rate_i': 0.015,
                 'T_prod_out_max': 100,
                 'T_prod_in_min': 30,
+                'coverage_rate': 0.80,
             },
             'k2': {
                 'C_Hprod_unit': 1000,
@@ -43,6 +44,7 @@ production = {
                 'rate_i': 0.04,
                 'T_prod_out_max': 100,
                 'T_prod_in_min': 30,
+                'coverage_rate': None,
             },
         },
     },
