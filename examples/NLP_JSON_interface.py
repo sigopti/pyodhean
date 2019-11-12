@@ -1,3 +1,4 @@
+"""Solve simple case using PyODHeaN JSON interface"""
 from pprint import pprint
 
 from pyodhean.interface import JSONInterface
