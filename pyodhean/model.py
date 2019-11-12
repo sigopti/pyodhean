@@ -396,14 +396,6 @@ class Model:
         # (valeur commune à toutes les productions potentielles)
         self.model.H_inst_bigM = pe.Param(initialize=1000 * H_req_max)
 
-        def calcul_gamma(model):
-            """coefficient gamma pour le calcul des pertes de charges du réseau
-
-            Pour en déduire la puissance de pompage et son coût
-            """
-            return 100 / 70 * ((100 / model.mu)**(-0.25)) / (2 * (model.rho**0.75))
-        self.model.gamma = pe.Param(initialize=calcul_gamma)
-
         def calcul_f_opex(model, k):
             """Facteur multiplicateur des coûts operationnels permettant de tenir compte de la somme
              des dépenses annuelles actualisés et suivant l'inflation de l'energie et ce par
