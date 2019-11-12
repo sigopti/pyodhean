@@ -1,5 +1,5 @@
-"""Solve a problem defined in a .json file"""
 #!/usr/bin/env python3
+"""Solve a problem defined in a .json file"""
 
 import sys
 import json
