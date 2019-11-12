@@ -36,6 +36,7 @@ json_input = {
                         'production_unitary_cost': 800,
                         'energy_unitary_cost': 0.08,
                         'energy_cost_inflation_rate': 0.04,
+                        'coverage_rate': 0.80,
                     },
                     'k2': {
                         'efficiency': 0.9,
