@@ -1,4 +1,4 @@
-"""Solve simple case using PyODHeaN JSON interface"""
+"""Test simple case using PyODHeaN JSON interface"""
 from pyodhean.interface import JSONInterface
 
 
