@@ -9,7 +9,8 @@ DEFAULT_PARAMETERS = {
     # masse volumique de l'eau a 20°C (kg/m3)
     'water_rho': 974,
     # borne vitesse min, 0.1m/s d'après Techniques de l'Ingénieur (m/s)
-    'speed_min': 0.1,
+    # set min to 0 to allow dead legs (consumer nodes with 0 demand)
+    'speed_min': 0,
     # borne vitesse max, 3m/s d'après Techniques de l'Ingénieur (m/s)
     'speed_max': 3,
     # diamètre interieur max du tuyau (m)
