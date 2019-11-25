@@ -474,19 +474,23 @@ class Model:
         # Vitesses
         self.model.V_linePC = pe.Var(
             self.model.i, self.model.j,
-            initialize=(self.model.V_min + self.model.V_max) / 2, bounds=(0, self.model.V_max),
+            initialize=(self.model.V_min + self.model.V_max) / 2,
+            bounds=(self.model.V_min, self.model.V_max),
             doc='vitesses conduites producteurs-consommateurs = ALLER')
         self.model.V_lineCP = pe.Var(
             self.model.j, self.model.i,
-            initialize=(self.model.V_min + self.model.V_max) / 2, bounds=(0, self.model.V_max),
+            initialize=(self.model.V_min + self.model.V_max) / 2,
+            bounds=(self.model.V_min, self.model.V_max),
             doc='vitesses conduites consommateurs-producteurs = RETOUR')
         self.model.V_lineCC_parallel = pe.Var(
             self.model.j, self.model.o,
-            initialize=(self.model.V_min + self.model.V_max) / 2, bounds=(0, self.model.V_max),
+            initialize=(self.model.V_min + self.model.V_max) / 2,
+            bounds=(self.model.V_min, self.model.V_max),
             doc='vitesses conduites consommateurs-consommateurs ALLER')
         self.model.V_lineCC_return = pe.Var(
             self.model.o, self.model.j,
-            initialize=(self.model.V_min + self.model.V_max) / 2, bounds=(0, self.model.V_max),
+            initialize=(self.model.V_min + self.model.V_max) / 2,
+            bounds=(self.model.V_min, self.model.V_max),
             doc='vitesses conduites consommateurs-consommateurs RETOUR')
 
         # Diamètres
