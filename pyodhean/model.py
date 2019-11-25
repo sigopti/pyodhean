@@ -590,23 +590,28 @@ class Model:
             self.model.i, self.model.k,
             initialize=self.model.T_init_min,
             bounds=(self.model.T_init_min, self.model.T_init_max),
-            doc='température de sortie de la technologie k à la production i (°C)')
+            doc=(
+                'température de retour de la technologie k à la production i (°C) '
+                '= température de retour à la production i'
+            ))
         self.model.T_prod_tot_in = pe.Var(
             self.model.i,
             initialize=self.model.T_init_min,
             bounds=(self.model.T_init_min, self.model.T_init_max),
-            doc='température de sortie de la production i = mélange des k technologies (°C)')
+            doc='température de retour à la production i (°C)')
         self.model.T_prod_out = pe.Var(
             self.model.i, self.model.k,
             initialize=self.model.T_init_min,
             bounds=(self.model.T_init_min, self.model.T_init_max),
-            doc=('température de retour de la technologie k à la production i '
-                 '= température de retour à la production i (°C)'))
+            doc='température de départ de la technologie k de la production i (°C)')
         self.model.T_prod_tot_out = pe.Var(
             self.model.i,
             initialize=self.model.T_init_min,
             bounds=(self.model.T_init_min, self.model.T_init_max),
-            doc='température de retour à la production i (°C)')
+            doc=(
+                'température de départ de la production i (°C) '
+                '= mélange des k technologies'
+            ))
         self.model.T_linePC_in = pe.Var(
             self.model.i, self.model.j,
             initialize=self.model.T_init_min,
