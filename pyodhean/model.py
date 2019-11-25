@@ -93,6 +93,8 @@ class Model:
             'exchanger_DTLM': 'DTLM',
             'exchanger_delta_t_hot': 'DT1',
             'exchanger_delta_t_cold': 'DT2',
+            'exchanger_building_t_in': 'T_req_in',
+            'exchanger_building_t_out': 'T_req_out',
         }
         consumption = {
             cons_id: {
