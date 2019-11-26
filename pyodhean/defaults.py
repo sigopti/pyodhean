@@ -14,7 +14,7 @@ DEFAULT_PARAMETERS = {
     # borne vitesse max, 3m/s d'après Techniques de l'Ingénieur (m/s)
     'speed_max': 3,
     # diamètre interieur max du tuyau (m)
-    'diameter_int_min': 0.01,
+    'diameter_int_min': 0,
     # diamètre interieur max du tuyau (m)
     'diameter_int_max': 0.25,
     # épaisseur de metal dependant du diametre (m)
