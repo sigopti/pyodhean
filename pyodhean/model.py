@@ -452,22 +452,16 @@ class Model:
         def calcul_T_init_min(model):
             """Température minimale pour les températures de départ/entrée
 
-            Il s'agit de la plus petite température parmi les températures minimales de retour des
-            technologies de production et minimales de sortie des consommateurs
+            Il s'agit de la plus petite température parmi les températures minimales
+            de retour des technologies de production
             """
-            return min(
-                min(model.T_prod_in_min[k] for k in model.k),
-                min(model.T_req_in[j] for j in model.j)
-            )
+            return min(model.T_prod_in_min[k] for k in model.k)
         self.model.T_init_min = pe.Param(initialize=calcul_T_init_min)
 
-        # Température maximale qui sert de borne supérieure pour les températures de retour/sortie
-        # (production, consommateur, échangeur, conduites, etc.).
-        # Il s'agit de la plus grande température parmis les températures maximales de départ des
-        # technologies de production et maximales d'entrée des consommateurs"""
-        T_init_max = max(
-            T_prod_out_max, max(self.model.T_req_out[j] for j in self.model.j))
-        self.model.T_init_max = pe.Param(initialize=T_init_max)
+        # Température maximale pour les températures de retour/sortie
+        # Il s'agit de la plus grande température parmis les températures maximales
+        # de départ des technologies de production
+        self.model.T_init_max = pe.Param(initialize=T_prod_out_max)
 
         # Variables
 
