@@ -305,8 +305,14 @@ class Model:
         # pylint: disable=too-many-locals
         # pylint: disable=too-many-statements
 
-        T_prod_out_max = max(
-            self.model.T_prod_out_max[k] for k in self.model.k)
+        # Température maximale pour les températures de retour/sortie
+        # Il s'agit de la plus grande température parmis les températures maximales
+        # de départ des technologies de production
+        T_prod_out_max = max(self.model.T_prod_out_max[k] for k in self.model.k)
+        # Température minimale pour les températures de départ/entrée
+        # Il s'agit de la plus petite température parmi les températures minimales
+        # de retour des technologies de production
+        T_prod_in_min = min(self.model.T_prod_in_min[k] for k in self.model.k)
 
         # Parameters
 
@@ -449,20 +455,6 @@ class Model:
             return model.Dint_min + model.tk_insul + model.tk_pipe
         self.model.Dout_min = pe.Param(initialize=calcul_Dout_min)
 
-        def calcul_T_init_min(model):
-            """Température minimale pour les températures de départ/entrée
-
-            Il s'agit de la plus petite température parmi les températures minimales
-            de retour des technologies de production
-            """
-            return min(model.T_prod_in_min[k] for k in model.k)
-        self.model.T_init_min = pe.Param(initialize=calcul_T_init_min)
-
-        # Température maximale pour les températures de retour/sortie
-        # Il s'agit de la plus grande température parmis les températures maximales
-        # de départ des technologies de production
-        self.model.T_init_max = pe.Param(initialize=T_prod_out_max)
-
         # Variables
 
         # Vitesses
@@ -582,91 +574,91 @@ class Model:
         # Températures
         self.model.T_prod_in = pe.Var(
             self.model.i, self.model.k,
-            initialize=self.model.T_init_min,
-            bounds=(self.model.T_init_min, self.model.T_init_max),
+            initialize=T_prod_in_min,
+            bounds=(T_prod_in_min, T_prod_out_max),
             doc=(
                 'température de retour de la technologie k à la production i (°C) '
                 '= température de retour à la production i'
             ))
         self.model.T_prod_tot_in = pe.Var(
             self.model.i,
-            initialize=self.model.T_init_min,
-            bounds=(self.model.T_init_min, self.model.T_init_max),
+            initialize=T_prod_in_min,
+            bounds=(T_prod_in_min, T_prod_out_max),
             doc='température de retour à la production i (°C)')
         self.model.T_prod_out = pe.Var(
             self.model.i, self.model.k,
-            initialize=self.model.T_init_min,
-            bounds=(self.model.T_init_min, self.model.T_init_max),
+            initialize=T_prod_in_min,
+            bounds=(T_prod_in_min, T_prod_out_max),
             doc='température de départ de la technologie k de la production i (°C)')
         self.model.T_prod_tot_out = pe.Var(
             self.model.i,
-            initialize=self.model.T_init_min,
-            bounds=(self.model.T_init_min, self.model.T_init_max),
+            initialize=T_prod_in_min,
+            bounds=(T_prod_in_min, T_prod_out_max),
             doc=(
                 'température de départ de la production i (°C) '
                 '= mélange des k technologies'
             ))
         self.model.T_linePC_in = pe.Var(
             self.model.i, self.model.j,
-            initialize=self.model.T_init_min,
-            bounds=(self.model.T_init_min, self.model.T_init_max),
+            initialize=T_prod_in_min,
+            bounds=(T_prod_in_min, T_prod_out_max),
             doc='température de départ de la production i (°C)')
         self.model.T_linePC_out = pe.Var(
             self.model.i, self.model.j,
-            initialize=self.model.T_init_min,
-            bounds=(self.model.T_init_min, self.model.T_init_max),
+            initialize=T_prod_in_min,
+            bounds=(T_prod_in_min, T_prod_out_max),
             doc=("température d'entrée dans le premier noeud "
                  "= température de départ de la production i - pertes (°C)"))
         self.model.T_lineCP_in = pe.Var(
             self.model.j, self.model.i,
-            initialize=self.model.T_init_min,
-            bounds=(self.model.T_init_min, self.model.T_init_max),
+            initialize=T_prod_in_min,
+            bounds=(T_prod_in_min, T_prod_out_max),
             doc='température de départ du dernier noeud (°C)')
         self.model.T_lineCP_out = pe.Var(
             self.model.j, self.model.i,
-            initialize=self.model.T_init_min,
-            bounds=(self.model.T_init_min, self.model.T_init_max),
+            initialize=T_prod_in_min,
+            bounds=(T_prod_in_min, T_prod_out_max),
             doc=('température de retour à la production i '
                  '= température de départ du dernier noeud - pertes (°C)'))
         self.model.T_hx_in = pe.Var(
             self.model.j,
-            initialize=self.model.T_init_min,
-            bounds=(self.model.T_init_min, self.model.T_init_max),
+            initialize=T_prod_in_min,
+            bounds=(T_prod_in_min, T_prod_out_max),
             doc="température d'entrée dans l'échangeur (°C)")
         self.model.T_hx_out = pe.Var(
             self.model.j,
-            initialize=self.model.T_init_min,
-            bounds=(self.model.T_init_min, self.model.T_init_max),
+            initialize=T_prod_in_min,
+            bounds=(T_prod_in_min, T_prod_out_max),
             doc="température de sortie de l'échangeur (°C)")
         self.model.T_supply = pe.Var(
             self.model.j,
-            initialize=self.model.T_init_min,
-            bounds=(self.model.T_init_min, self.model.T_init_max),
+            initialize=T_prod_in_min,
+            bounds=(T_prod_in_min, T_prod_out_max),
             doc="température avant l'échangeur de C(j) = T_hx_in (°C)")
         self.model.T_lineCC_parallel_in = pe.Var(
             self.model.j, self.model.o,
-            initialize=self.model.T_init_min,
-            bounds=(self.model.T_init_min, self.model.T_init_max),
+            initialize=T_prod_in_min,
+            bounds=(T_prod_in_min, T_prod_out_max),
             doc='température de départ au noeud C(j) - ALLER (°C)')
         self.model.T_lineCC_parallel_out = pe.Var(
             self.model.j, self.model.o,
-            initialize=self.model.T_init_min,
-            bounds=(self.model.T_init_min, self.model.T_init_max),
+            initialize=T_prod_in_min,
+            bounds=(T_prod_in_min, T_prod_out_max),
             doc="température d'arrivée au noeud C(o) - ALLER (°C)")
         self.model.T_lineCC_return_in = pe.Var(
             self.model.o, self.model.j,
-            initialize=self.model.T_init_min,
-            bounds=(self.model.T_init_min, self.model.T_init_max),
+            initialize=T_prod_in_min,
+            bounds=(T_prod_in_min, T_prod_out_max),
             doc='température de départ au noeud C(o) - RETOUR (°C)')
         self.model.T_lineCC_return_out = pe.Var(
             self.model.o, self.model.j,
-            initialize=self.model.T_init_min,
-            bounds=(self.model.T_init_min, self.model.T_init_max),
+            initialize=T_prod_in_min,
+            bounds=(T_prod_in_min, T_prod_out_max),
             doc="température d'arrivée au noeud C(j) - RETOUR (°C)")
         self.model.T_return = pe.Var(
             self.model.j,
-            initialize=self.model.T_init_min,
-            bounds=(self.model.T_init_min, self.model.T_init_max),
+            initialize=T_prod_in_min,
+            bounds=(T_prod_in_min, T_prod_out_max),
             doc="température après l'échangeur de C(j) = T_hx_out (°C)")
 
         # Echangeur
@@ -678,12 +670,12 @@ class Model:
         self.model.DT1 = pe.Var(
             self.model.j,
             initialize=self.model.T_hx_pinch,
-            bounds=(self.model.T_hx_pinch, self.model.T_init_max),
+            bounds=(self.model.T_hx_pinch, T_prod_out_max),
             doc='Différence de température côté chaud = T_hx_in - T_req_out (°C)')
         self.model.DT2 = pe.Var(
             self.model.j,
             initialize=self.model.T_hx_pinch,
-            bounds=(self.model.T_hx_pinch, self.model.T_init_max),
+            bounds=(self.model.T_hx_pinch, T_prod_out_max),
             doc='Différence de température côté froid = T_hx_out - T_req_in (°C)')
 
         def A_hx_borne(model, j):
