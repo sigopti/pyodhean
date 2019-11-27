@@ -57,7 +57,6 @@ class Model:
         prod_techno_mapping = {
             'flow_rate': 'M_prod',
             't_supply': 'T_prod_out',
-            't_return': 'T_prod_in',
             'power': 'H_inst',
         }
         production = {
@@ -68,10 +67,14 @@ class Model:
                 },
                 'technologies': {
                     techno_id: {
-                        k: pe.value(getattr(self.model, v)[
-                            (prod_id, '{}/{}'.format(prod_id, techno_id))
-                        ])
-                        for k, v in prod_techno_mapping.items()
+                        **{
+                            k: pe.value(getattr(self.model, v)[
+                                (prod_id, '{}/{}'.format(prod_id, techno_id))
+                            ])
+                            for k, v in prod_techno_mapping.items()
+                        },
+                        # t_return is common to all technologies
+                        't_return': pe.value(self.model.T_prod_tot_in[prod_id]),
                     }
                     for techno_id in prod['technologies']
                 }
@@ -572,14 +575,6 @@ class Model:
                 "différent de M_hx seulement si cascade (kg/s)"))
 
         # Températures
-        self.model.T_prod_in = pe.Var(
-            self.model.i, self.model.k,
-            initialize=T_prod_in_min,
-            bounds=(T_prod_in_min, T_prod_out_max),
-            doc=(
-                'température de retour de la technologie k à la production i (°C) '
-                '= température de retour à la production i'
-            ))
         self.model.T_prod_tot_in = pe.Var(
             self.model.i,
             initialize=T_prod_in_min,
@@ -1067,20 +1062,6 @@ class Model:
         self.model.bilanF_H_prod_tot_in = pe.Constraint(
             self.model.i, rule=bilanF_H_prod_tot_in_rule)
 
-        def bilanG_T_prod_in_rule_bigM(model, i, k):
-            """Egalité de température au point G d'un noeud producteur (point convergent)
-
-            Tprod_tot = Tprod : la température de retour est la même pour toutes les technologies
-            Inéquation du bigM"""
-            valeur = model.T_prod_tot_in[i] - model.T_prod_in[i, k]
-            return pe.inequality(
-                - model.T_bigM * (1 - model.Y_P[i, k]),
-                valeur,
-                model.T_bigM * (1 - model.Y_P[i, k])
-            )
-        self.model.bilanG_T_prod_in_bigM = pe.Constraint(
-            self.model.i, self.model.k, rule=bilanG_T_prod_in_rule_bigM)
-
         def bilanH_H_prod_out_rule(model, i):
             """Bilan d'énergie au point H d'un noeud producteur (point convergent)
 
@@ -1114,7 +1095,7 @@ class Model:
             """
             return (
                 model.H_inst[i, k] * model.Eff[k] / model.simultaneity_rate <=
-                model.M_prod[i, k] * model.Cp * (model.T_prod_out[i, k] - model.T_prod_in[i, k]) +
+                model.M_prod[i, k] * model.Cp * (model.T_prod_out[i, k] - model.T_prod_tot_in[i]) +
                 model.H_inst_bigM * (1 - model.Y_P[i, k])
             )
         self.model.bilan_H_inst_bigM1 = pe.Constraint(
@@ -1124,7 +1105,7 @@ class Model:
             """..... Inéquation 2 du bigM"""
             return (
                 model.H_inst[i, k] * model.Eff[k] / model.simultaneity_rate >=
-                model.M_prod[i, k] * model.Cp * (model.T_prod_out[i, k] - model.T_prod_in[i, k]) -
+                model.M_prod[i, k] * model.Cp * (model.T_prod_out[i, k] - model.T_prod_tot_in[i]) -
                 model.H_inst_bigM * (1 - model.Y_P[i, k])
             )
         self.model.bilan_H_inst_bigM2 = pe.Constraint(
