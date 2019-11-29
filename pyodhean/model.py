@@ -552,17 +552,30 @@ class Model:
             initialize=self.model.M_min,
             bounds=(self.model.M_min, self.model.M_max),
             doc='debit dans P(i) = somme des débits des technos k(k) (kg/s)')
+
+        def calcul_M_hx_init(model, j):
+            if not has_power_demand(j):
+                return 0
+            return model.M_min
+
+        def calcul_M_hx_bounds(model, j):
+            if not has_power_demand(j):
+                return (0, 0)
+            return (model.M_min, model.M_max)
+
         self.model.M_hx = pe.Var(
             self.model.j,
-            initialize=self.model.M_min,
-            bounds=(self.model.M_min, self.model.M_max),
+            initialize=calcul_M_hx_init,
+            bounds=calcul_M_hx_bounds,
             doc="debit dans l'échangeur de C(j) côté primaire (kg/s)")
+
         self.model.M_supply = pe.Var(
             self.model.j,
             initialize=self.model.M_min,
-            bounds=(self.model.M_min, self.model.M_max),
+            bounds=(0, self.model.M_max),
             doc=("debit avant l'échangeur de C(j); "
                  "différent de M_hx seulement si cascade autorisée (kg/s)"))
+
         self.model.M_lineCC_parallel = pe.Var(
             self.model.j, self.model.o,
             initialize=self.model.M_min,
@@ -664,27 +677,48 @@ class Model:
             doc="température après l'échangeur de C(j) = T_hx_out (°C)")
 
         # Echangeur
+        def calcul_DTLM_init(model, j):
+            if not has_power_demand(j):
+                return 0
+            return model.T_hx_pinch
+
+        def calcul_DTLM_bounds(model, j):
+            if not has_power_demand(j):
+                return (0, 0)
+            return (model.T_hx_pinch, T_prod_out_max)
+
         self.model.DTLM = pe.Var(
             self.model.j,
-            initialize=T_prod_out_max,
-            bounds=(0, T_prod_out_max),
+            initialize=calcul_DTLM_init,
+            bounds=calcul_DTLM_bounds,
             doc='Différence logarithmique de température à l’échangeur de chaleur (°C)')
+
+        def calcul_DT_init(model, j):
+            if not has_power_demand(j):
+                return 0
+            return model.T_hx_pinch
+
+        def calcul_DT_bounds(model, j):
+            if not has_power_demand(j):
+                return (0, 0)
+            return (model.T_hx_pinch, T_prod_out_max)
+
         self.model.DT1 = pe.Var(
             self.model.j,
-            initialize=self.model.T_hx_pinch,
-            bounds=(self.model.T_hx_pinch, T_prod_out_max),
+            initialize=calcul_DT_init,
+            bounds=calcul_DT_bounds,
             doc='Différence de température côté chaud = T_hx_in - T_req_out (°C)')
         self.model.DT2 = pe.Var(
             self.model.j,
-            initialize=self.model.T_hx_pinch,
-            bounds=(self.model.T_hx_pinch, T_prod_out_max),
+            initialize=calcul_DT_init,
+            bounds=calcul_DT_bounds,
             doc='Différence de température côté froid = T_hx_out - T_req_in (°C)')
 
         def A_hx_borne(model, j):
-            return (
-                model.H_req[j] / (model.K_hx * T_prod_out_max),
-                10 * model.H_req[j] / (model.K_hx * T_prod_out_max)
-            )
+            # TODO: Multiplying by 10 *after* the division introduces a slight
+            # floating-point approx. Without this, we get convergence issues. Why ?
+            A_hx = model.H_req[j] / (model.K_hx * T_prod_out_max)
+            return (A_hx, 10 * A_hx)
 
         def A_hx_init(model, j):
             return model.H_req[j] / (model.K_hx * T_prod_out_max)
@@ -1123,6 +1157,9 @@ class Model:
             Pas de bigM, un consommateur est forcément alimenté
             Puissance requise = débit * Cp * delta T
             Inéquation 1 du bigM"""
+            # TODO: Constraint "T_hx_out == T_hx_in" brings convergence issues. Why ?
+            # if not has_power_demand(j):
+            #     return model.T_hx_out[j] == model.T_hx_in[j]
             return model.H_hx[j] == (
                 model.M_hx[j] * model.Cp * (model.T_hx_in[j] - model.T_hx_out[j]))
         self.model.bilan_chaleur_HX = pe.Constraint(self.model.j, rule=bilan_chaleur_HX_rule)
@@ -1132,6 +1169,8 @@ class Model:
 
             = entrée au primaire - sortie au secondaire
             """
+            if not has_power_demand(j):
+                return pe.Constraint.Feasible
             return model.DT1[j] == model.T_hx_in[j] - model.T_req_out[j]
         self.model.bilan_DT1 = pe.Constraint(self.model.j, rule=bilan_DT1_rule)
 
@@ -1140,16 +1179,22 @@ class Model:
 
             = sortie au primaire - entrée au secondaire
             """
+            if not has_power_demand(j):
+                return pe.Constraint.Feasible
             return model.DT2[j] == model.T_hx_out[j] - model.T_req_in[j]
         self.model.bilan_DT2 = pe.Constraint(self.model.j, rule=bilan_DT2_rule)
 
         def bilan_DT1_pinch_rule(model, j):
             """DT1 doit être supérieur au pincement minimun par définition"""
+            if not has_power_demand(j):
+                return pe.Constraint.Feasible
             return model.DT1[j] >= model.T_hx_pinch
         self.model.bilan_DT1_pinch = pe.Constraint(self.model.j, rule=bilan_DT1_pinch_rule)
 
         def bilan_DT2_pinch_rule(model, j):
             """DT2 doit être supérieur au pincement minimum par définition"""
+            if not has_power_demand(j):
+                return pe.Constraint.Feasible
             return model.DT2[j] >= model.T_hx_pinch
         self.model.bilan_DT2_pinch = pe.Constraint(self.model.j, rule=bilan_DT2_pinch_rule)
 
@@ -1158,6 +1203,8 @@ class Model:
 
             Différence logarithmique de température à l’échangeur de chaleur (°C)
             """
+            if not has_power_demand(j):
+                return pe.Constraint.Feasible
             return model.DTLM[j] == (
                 model.DT1[j] * model.DT2[j] * 0.5 * (model.DT1[j] + model.DT2[j])
             ) ** (1 / 3)
@@ -1168,6 +1215,8 @@ class Model:
 
             Avec le DTLM qui dépend des températures au primaire et secondaire
             H = coeff_échange * surface * DTLM"""
+            if not has_power_demand(j):
+                return pe.Constraint.Feasible
             return model.H_hx[j] == model.A_hx[j] * model.K_hx * model.DTLM[j]
         self.model.bilan_chaleur_HX_DTLM = pe.Constraint(
             self.model.j, rule=bilan_chaleur_HX_DTLM_rule)
