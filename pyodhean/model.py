@@ -308,6 +308,13 @@ class Model:
         # pylint: disable=too-many-locals
         # pylint: disable=too-many-statements
 
+        def has_power_demand(j_idx):
+            """Return True if the node has power demand
+
+            If the power demand is 0, the node is a network node.
+            """
+            return bool(self.model.H_req[j_idx])
+
         # Température maximale pour les températures de retour/sortie
         # Il s'agit de la plus grande température parmis les températures maximales
         # de départ des technologies de production
