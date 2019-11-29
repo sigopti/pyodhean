@@ -1,7 +1,7 @@
 """This file defines the PyODHeaN model class"""
 # pylint: disable=too-many-lines
 
-from math import pi
+import math
 
 import pyomo.environ as pe
 import pyomo.opt as po
@@ -434,7 +434,7 @@ class Model:
             S'applique à l'ensemble du réseau (productions, échangeurs en sous-station
             et conduites)
             """
-            return model.V_max * model.rho * pi * (model.Dint_max**2) / 4
+            return model.V_max * model.rho * math.pi * (model.Dint_max**2) / 4
         self.model.M_max = pe.Param(initialize=calcul_M_max)
 
         self.model.M_min = pe.Param(initialize=0, doc='débit minimal dans la canalisation')
@@ -762,7 +762,7 @@ class Model:
             """Inéquation du bigM sur le débit entre producteur et consommateur - ALLER"""
             valeur = (
                 model.V_linePC[i, j] * (
-                    model.rho * pi * model.Dint_PC[i, j] * model.Dint_PC[i, j] / 4) -
+                    model.rho * math.pi * model.Dint_PC[i, j] * model.Dint_PC[i, j] / 4) -
                 model.M_linePC[i, j]
             )
             return pe.inequality(
@@ -777,7 +777,7 @@ class Model:
             """Inéquation du bigM sur le débit entre consommateur et producteur - RETOUR"""
             valeur = (
                 model.V_lineCP[j, i] * (
-                    model.rho * pi * model.Dint_CP[j, i] * model.Dint_CP[j, i] / 4) -
+                    model.rho * math.pi * model.Dint_CP[j, i] * model.Dint_CP[j, i] / 4) -
                 model.M_lineCP[j, i]
             )
             return pe.inequality(
@@ -791,8 +791,8 @@ class Model:
         def Def_V_lineCC_parallel_rule_bigM(model, j, o):
             """Inéquation du bigM sur le débit entre consommateurs - ALLER"""
             valeur = (
-                model.V_lineCC_parallel[j, o] *
-                model.rho * pi * model.Dint_CC_parallel[j, o] * model.Dint_CC_parallel[j, o] / 4 -
+                model.V_lineCC_parallel[j, o] * model.rho * math.pi *
+                model.Dint_CC_parallel[j, o] * model.Dint_CC_parallel[j, o] / 4 -
                 model.M_lineCC_parallel[j, o]
             )
             return pe.inequality(
@@ -806,8 +806,8 @@ class Model:
         def Def_V_lineCC_return_rule_bigM(model, o, j):
             """Inéquation du bigM sur le débit entre consommateurs - RETOUR"""
             valeur = (
-                model.V_lineCC_return[o, j] *
-                model.rho * pi * model.Dint_CC_return[o, j] * model.Dint_CC_return[o, j] / 4 -
+                model.V_lineCC_return[o, j] * model.rho * math. pi *
+                model.Dint_CC_return[o, j] * model.Dint_CC_return[o, j] / 4 -
                 model.M_lineCC_return[o, j]
             )
             return pe.inequality(
