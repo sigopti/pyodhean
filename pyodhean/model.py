@@ -113,7 +113,6 @@ class Model:
         cons_cons_mapping = {
             'speed': 'V_lineCC_parallel',
             'diameter_int': 'Dint_CC_parallel',
-            'diameter_out': 'Dout_CC_parallel',
             'flow_rate': 'M_lineCC_parallel',
             't_supply_in': 'T_lineCC_parallel_in',
             't_supply_out': 'T_lineCC_parallel_out',
@@ -122,8 +121,14 @@ class Model:
         }
         cons_cons_pipes = {
             ccp: {
-                k: pe.value(getattr(self.model, v)[ccp])
-                for k, v in cons_cons_mapping.items()
+                **{
+                    k: pe.value(getattr(self.model, v)[ccp])
+                    for k, v in cons_cons_mapping.items()
+                },
+                'diameter_out': pe.value(
+                    getattr(self.model, 'Dint_CC_parallel')[ccp] +
+                    self.model.tk_insul + self.model.tk_pipe
+                ),
             }
             for ccp, length in self.configuration['cons_cons_pipes'].items()
             if length
@@ -133,7 +138,6 @@ class Model:
         prod_cons_mapping_PC = {
             'speed': 'V_linePC',
             'diameter_int': 'Dint_PC',
-            'diameter_out': 'Dout_PC',
             'flow_rate': 'M_linePC',
             't_supply_in': 'T_linePC_in',
             't_supply_out': 'T_linePC_out',
@@ -148,10 +152,14 @@ class Model:
                     k: pe.value(getattr(self.model, v)[pcp])
                     for k, v in prod_cons_mapping_PC.items()
                 },
+                'diameter_out': pe.value(
+                    getattr(self.model, 'Dint_PC')[pcp] +
+                    self.model.tk_insul + self.model.tk_pipe
+                ),
                 **{
                     k: pe.value(getattr(self.model, v)[(pcp[1], pcp[0])])
                     for k, v in prod_cons_mapping_CP.items()
-                }
+                },
             }
             for pcp, length in self.configuration['prod_cons_pipes'].items()
             if length
@@ -455,16 +463,6 @@ class Model:
         # elle vaut 1000 fois la température de départ maximale des technologies disponibles"""
         self.model.T_bigM = pe.Param(initialize=T_prod_out_max)
 
-        def calcul_Dout_max(model):
-            """calcul du diamètre maximum de canalisation"""
-            return model.Dint_max + model.tk_insul + model.tk_pipe
-        self.model.Dout_max = pe.Param(initialize=calcul_Dout_max)
-
-        def calcul_Dout_min(model):
-            """calcul du diamètre minimum de canalisation"""
-            return model.Dint_min + model.tk_insul + model.tk_pipe
-        self.model.Dout_min = pe.Param(initialize=calcul_Dout_min)
-
         # Variables
 
         # Vitesses
@@ -510,26 +508,6 @@ class Model:
             initialize=(self.model.Dint_min + self.model.Dint_max) / 2,
             bounds=(self.model.Dint_min, self.model.Dint_max),
             doc='diamètres intérieurs conduites consommateurs-consommateurs RETOUR')
-        self.model.Dout_PC = pe.Var(
-            self.model.i, self.model.j,
-            initialize=(self.model.Dint_min + self.model.Dint_max) / 2,
-            bounds=(self.model.Dint_min, self.model.Dint_max),
-            doc='diamètres extérieurs conduites producteurs-consommateurs = ALLER')
-        self.model.Dout_CP = pe.Var(
-            self.model.j, self.model.i,
-            initialize=(self.model.Dint_min + self.model.Dint_max) / 2,
-            bounds=(self.model.Dint_min, self.model.Dint_max),
-            doc='diamètres extérieurs conduites consommateurs-producteurs = RETOUR')
-        self.model.Dout_CC_parallel = pe.Var(
-            self.model.j, self.model.o,
-            initialize=(self.model.Dint_min + self.model.Dint_max) / 2,
-            bounds=(self.model.Dint_min, self.model.Dint_max),
-            doc='diamètres extérieurs conduites consommateurs-consommateurs ALLER')
-        self.model.Dout_CC_return = pe.Var(
-            self.model.o, self.model.j,
-            initialize=(self.model.Dint_min + self.model.Dint_max) / 2,
-            bounds=(self.model.Dint_min, self.model.Dint_max),
-            doc='diamètres extérieurs conduites consommateurs-consommateurs RETOUR')
 
         # Débits
         self.model.M_linePC = pe.Var(
@@ -768,34 +746,6 @@ class Model:
                  '= 2 fois la longueur de tranchée car tuyau aller-retour'))
 
         # Constraints
-
-        # Définition des diametres exterieurs
-        # = diametre interieur + epaisseur du tuyau et epaisseur isolant
-        def Def_Dout_PC_rule(model, i, j):
-            """Diamètre des canalisations producteurs-consommateurs - ALLER"""
-            return model.Dout_PC[i, j] == (
-                model.Dint_PC[i, j] + model.tk_pipe + model.tk_insul)
-        self.model.Def_Dout_PC = pe.Constraint(self.model.i, self.model.j, rule=Def_Dout_PC_rule)
-
-        def Def_Dout_CP_rule(model, j, i):
-            """Diamètre de la canalisation producteurs-consommateurs - RETOUR"""
-            return model.Dout_CP[j, i] == (
-                model.Dint_CP[j, i] + model.tk_pipe + model.tk_insul)
-        self.model.Def_Dout_CP = pe.Constraint(self.model.j, self.model.i, rule=Def_Dout_CP_rule)
-
-        def Def_Dout_CC_parallel_rule(model, j, o):
-            """Diamètre des canalisations entre consommateurs - ALLER"""
-            return model.Dout_CC_parallel[j, o] == (
-                model.Dint_CC_parallel[j, o] + model.tk_pipe + model.tk_insul)
-        self.model.Def_Dout_CC_parallel = pe.Constraint(
-            self.model.j, self.model.o, rule=Def_Dout_CC_parallel_rule)
-
-        def Def_Dout_CC_return_rule(model, o, j):
-            """Diamètre des canalisations entre consommateurs - RETOUR"""
-            return model.Dout_CC_return[o, j] == (
-                model.Dint_CC_return[o, j] + model.tk_pipe + model.tk_insul)
-        self.model.Def_Dout_CC_return = pe.Constraint(
-            self.model.o, self.model.j, rule=Def_Dout_CC_return_rule)
 
         # Existance des contraintes selon la valeur des variables binaires avec la méthode du bigM
         #  Débits
