@@ -487,25 +487,28 @@ class Model:
             bounds=(self.model.V_min, self.model.V_max),
             doc='vitesses conduites consommateurs-consommateurs RETOUR')
 
+        # TODO: Find best init value
+        Dint_init = (self.model.Dint_min + self.model.Dint_max) * (3 / 4)
+
         # Diamètres
         self.model.Dint_PC = pe.Var(
             self.model.i, self.model.j,
-            initialize=(self.model.Dint_min + self.model.Dint_max) / 2,
+            initialize=Dint_init,
             bounds=(self.model.Dint_min, self.model.Dint_max),
             doc='diamètres intérieurs conduites producteurs-consommateurs = ALLER')
         self.model.Dint_CP = pe.Var(
             self.model.j, self.model.i,
-            initialize=(self.model.Dint_min + self.model.Dint_max) / 2,
+            initialize=Dint_init,
             bounds=(self.model.Dint_min, self.model.Dint_max),
             doc='diamètres intérieurs conduites consommateurs-producteurs = RETOUR')
         self.model.Dint_CC_parallel = pe.Var(
             self.model.j, self.model.o,
-            initialize=(self.model.Dint_min + self.model.Dint_max) / 2,
+            initialize=Dint_init,
             bounds=(self.model.Dint_min, self.model.Dint_max),
             doc='diamètres intérieurs conduites consommateurs-consommateurs ALLER')
         self.model.Dint_CC_return = pe.Var(
             self.model.o, self.model.j,
-            initialize=(self.model.Dint_min + self.model.Dint_max) / 2,
+            initialize=Dint_init,
             bounds=(self.model.Dint_min, self.model.Dint_max),
             doc='diamètres intérieurs conduites consommateurs-consommateurs RETOUR')
 

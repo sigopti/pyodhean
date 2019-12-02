@@ -16,7 +16,7 @@ DEFAULT_PARAMETERS = {
     # diamètre interieur max du tuyau (m)
     'diameter_int_min': 0,
     # diamètre interieur max du tuyau (m)
-    'diameter_int_max': 0.25,
+    'diameter_int_max': 0.20,
     # épaisseur de metal dependant du diametre (m)
     'pipe_thickness': 0.025,
     # épaisseur de l'isolant autour de la canalisation (m)
