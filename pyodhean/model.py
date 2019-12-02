@@ -465,30 +465,32 @@ class Model:
 
         # Variables
 
+        # TODO: Improve init values
+        V_init = 0.5 * self.model.V_min + 0.5 * self.model.V_max
+        Dint_init = 0.25 * self.model.Dint_min + 0.75 * self.model.Dint_max
+        M_init = 1 * self.model.M_min + 0 * self.model.M_max
+
         # Vitesses
         self.model.V_linePC = pe.Var(
             self.model.i, self.model.j,
-            initialize=(self.model.V_min + self.model.V_max) / 2,
+            initialize=V_init,
             bounds=(self.model.V_min, self.model.V_max),
             doc='vitesses conduites producteurs-consommateurs = ALLER')
         self.model.V_lineCP = pe.Var(
             self.model.j, self.model.i,
-            initialize=(self.model.V_min + self.model.V_max) / 2,
+            initialize=V_init,
             bounds=(self.model.V_min, self.model.V_max),
             doc='vitesses conduites consommateurs-producteurs = RETOUR')
         self.model.V_lineCC_parallel = pe.Var(
             self.model.j, self.model.o,
-            initialize=(self.model.V_min + self.model.V_max) / 2,
+            initialize=V_init,
             bounds=(self.model.V_min, self.model.V_max),
             doc='vitesses conduites consommateurs-consommateurs ALLER')
         self.model.V_lineCC_return = pe.Var(
             self.model.o, self.model.j,
-            initialize=(self.model.V_min + self.model.V_max) / 2,
+            initialize=V_init,
             bounds=(self.model.V_min, self.model.V_max),
             doc='vitesses conduites consommateurs-consommateurs RETOUR')
-
-        # TODO: Find best init value
-        Dint_init = (self.model.Dint_min + self.model.Dint_max) * (3 / 4)
 
         # Diamètres
         self.model.Dint_PC = pe.Var(
@@ -515,22 +517,22 @@ class Model:
         # Débits
         self.model.M_linePC = pe.Var(
             self.model.i, self.model.j,
-            initialize=self.model.M_min,
+            initialize=M_init,
             bounds=(self.model.M_min, self.model.M_max),
             doc='debit entre un noeud P(i) et C(j) (kg/s)')
         self.model.M_lineCP = pe.Var(
             self.model.j, self.model.i,
-            initialize=self.model.M_min,
+            initialize=M_init,
             bounds=(self.model.M_min, self.model.M_max),
             doc='debit entre un noeud C(j) et P(i) (kg/s)')
         self.model.M_prod = pe.Var(
             self.model.i, self.model.k,
-            initialize=self.model.M_min,
+            initialize=M_init,
             bounds=(self.model.M_min, self.model.M_max),
             doc='debit de la techno k(k) dans P(i) (kg/s)')
         self.model.M_prod_tot = pe.Var(
             self.model.i,
-            initialize=self.model.M_min,
+            initialize=M_init,
             bounds=(self.model.M_min, self.model.M_max),
             doc='debit dans P(i) = somme des débits des technos k(k) (kg/s)')
 
