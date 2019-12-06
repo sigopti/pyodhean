@@ -18,25 +18,25 @@ setup(
     url='https://github.com/sigopti/pyodhean',
     author='Nobatek/INEF4',
     author_email='jlafrechoux@nobatek.com',
-    # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
-    classifiers=[
-        'Development Status :: 3 - Alpha',
-        'Intended Audience :: Developers',
-        'Topic :: Scientific/Engineering',
-        'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-    ],
     keywords=[
         'District',
         'Heating',
         'Network',
         'Optimization',
     ],
-    packages=find_packages(),
+    # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'Topic :: Scientific/Engineering',
+        'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+    ],
+    python_requires=">=3.6",
     install_requires=[
         'Pyomo>=5.6',
     ],
+    packages=find_packages(),
 )
