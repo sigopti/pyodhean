@@ -1232,9 +1232,7 @@ class Model:
         # Termes de la fonction coût
         def cout_pompage_rule(model):
             """Coût de pompage"""
-            return model.C_pump == (
-                model.C_pump_ratio * (model.C_heat + model.C_Hinst + model.C_hx + model.C_line_tot)
-            )
+            return model.C_pump == model.C_pump_ratio * (model.C_heat + model.C_pump)
         self.model.cout_pompage = pe.Constraint(rule=cout_pompage_rule)
 
         def cout_heat_rule(model):
