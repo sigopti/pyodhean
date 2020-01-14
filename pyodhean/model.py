@@ -167,19 +167,32 @@ class Model:
 
         # Global indicators
         globals_mapping = {
-            'pumps_operation_cost': 'C_pump',
-            'heat_production_cost': 'C_heat',
             'production_intallation_cost': 'C_Hinst',
             'exchangers_installation_cost': 'C_hx',
             'network_cost': 'C_line_tot',
-            'pipes_cost': 'C_pipe',
             'trenches_cost': 'C_tr',
+            'pipes_cost': 'C_pipe',
             'network_length': 'L_tot',
+            'pumps_operation_cost': 'C_pump',
+            'heat_production_cost': 'C_heat',
         }
         global_indicators = {
             k: pe.value(getattr(self.model, v))
             for k, v in globals_mapping.items()
         }
+        global_indicators['total_capex'] = (
+            global_indicators['production_intallation_cost'] +
+            global_indicators['exchangers_installation_cost'] +
+            global_indicators['network_cost']
+        )
+        global_indicators['total_opex'] = (
+            global_indicators['pumps_operation_cost'] +
+            global_indicators['heat_production_cost']
+        )
+        global_indicators['total_cost'] = (
+            global_indicators['total_capex'] +
+            global_indicators['total_opex']
+        )
 
         configuration = {
             'production': production,
