@@ -193,6 +193,16 @@ class Model:
             global_indicators['total_capex'] +
             global_indicators['total_opex']
         )
+        global_indicators['yearly_production'] = pe.value(
+            self.model.period *
+            self.model.simultaneity_rate *
+            (1 + self.model.heat_loss_rate) *
+            sum(self.model.H_inst[i, k] for k in self.model.k for i in self.model.i)
+        )
+        global_indicators['total_production'] = (
+            global_indicators['yearly_production'] *
+            pe.value(self.model.depreciation_period)
+        )
 
         configuration = {
             'production': production,
