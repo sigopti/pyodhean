@@ -190,6 +190,17 @@ class Model:
             k: pe.value(getattr(self.model, v))
             for k, v in globals_mapping.items()
         }
+        # XXX: This should be fixed in the model instead
+        for indicator in (
+            'production_intallation_cost',
+            'exchangers_installation_cost',
+            'network_cost',
+            'trenches_cost',
+            'pipes_cost',
+            'pumps_operation_cost',
+            'heat_production_cost',
+        ):
+            global_indicators[indicator] *= 1_000_000
         global_indicators['total_capex'] = (
             global_indicators['production_intallation_cost'] +
             global_indicators['exchangers_installation_cost'] +
