@@ -245,7 +245,7 @@ class Model:
             self.model.k, initialize=pluck(technologies, 'T_prod_in_min'),
             doc='température min autorisée en entree de chaudiere de la techno k (°C)')
         self.model.coverage_rate = pe.Param(
-            self.model.k, initialize=pluck(technologies, 'coverage_rate'),
+            self.model.k, domain=pe.Any, initialize=pluck(technologies, 'coverage_rate'),
             doc='taux de couverture de la techno k')
         self.model.Y_P = pe.Param(
             self.model.i, self.model.k, initialize=technos_per_prod,
