@@ -164,6 +164,16 @@ class Model:
             for pcp, length in self.configuration['prod_cons_pipes'].items()
             if length
         }
+        # Add derived indicators common to cons-cons and prod-cons pipes
+        for pipe in {**cons_cons_pipes, **prod_cons_pipes}.values():
+            pipe['power'] = pe.value(
+                pipe['flow_rate'] *
+                self.model.Cp *
+                (pipe['t_supply_out'] - pipe['t_return_in'])
+            )
+            pipe['yearly_energy'] = pe.value(
+                pipe['power'] * self.model.period
+            )
 
         # Global indicators
         globals_mapping = {
