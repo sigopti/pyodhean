@@ -1,0 +1,11 @@
+include *.rst LICENSE
+
+graft pyodhean
+
+graft docs
+prune docs/_build
+
+graft tests
+include tox.ini
+
+global-exclude *.py[co]
