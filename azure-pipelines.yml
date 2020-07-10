@@ -9,16 +9,16 @@ pool:
 
 resources:
   repositories:
-    - repository: asottile
+    - repository: lafrech
       type: github
-      name: asottile/azure-pipeline-templates
-      ref: refs/tags/v2.0.0
+      name: lafrech/azure-pipeline-templates
+      ref: refs/heads/linux-only
       endpoint: sigopti
 
 stages:
   - stage: lint
     jobs:
-      - template: job--python-tox.yml@asottile
+      - template: job--python-tox.yml@lafrech
         parameters:
           toxenvs: [lint]
           os: linux
@@ -35,7 +35,7 @@ stages:
             sudo ./coinbrew fetch build Ipopt@3.13.0 --prefix=/usr/local
   - stage: test
     jobs:
-      - template: job--python-tox.yml@asottile
+      - template: job--python-tox.yml@lafrech
         parameters:
           toxenvs: [py36, py38]
           os: linux
