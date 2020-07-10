@@ -18,6 +18,7 @@ setup(
     url='https://github.com/sigopti/pyodhean',
     author='Nobatek/INEF4',
     author_email='jlafrechoux@nobatek.com',
+    license='GPLv3+',
     keywords=[
         'District',
         'Heating',
