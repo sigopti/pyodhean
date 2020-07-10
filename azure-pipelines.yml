@@ -4,6 +4,9 @@ trigger:
   tags:
     include: ['*']
 
+pool:
+  vmImage: 'ubuntu-latest'
+
 resources:
   repositories:
     - repository: asottile
@@ -20,6 +23,16 @@ stages:
           toxenvs: [lint]
           os: linux
           coverage: false
+  - stage: coinbrew
+    displayName: "Install ipopt"
+    jobs:
+      - job: coinbrew
+        steps:
+        - script: |
+            sudo apt install make g++ gfortran pkgconf liblapack-dev
+            git clone --depth=1 https://github.com/coin-or/coinbrew
+            cd coinbrew
+            sudo ./coinbrew fetch build Ipopt@3.13.0 --prefix=/usr/local
   - stage: test
     jobs:
       - template: job--python-tox.yml@asottile
@@ -27,9 +40,3 @@ stages:
           toxenvs: [py36, py38]
           os: linux
           coverage: false
-          pre_test:
-              - script: |
-                  sudo apt install make g++ gfortran pkgconf liblapack-dev
-                  git clone --depth=1 https://github.com/coin-or/coinbrew
-                  cd coinbrew
-                  sudo ./coinbrew fetch build Ipopt@3.13.0 --prefix=/usr/local
