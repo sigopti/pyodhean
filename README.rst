@@ -11,7 +11,7 @@ PyODHeaN
     :alt: Python versions
 
 .. image:: https://img.shields.io/pypi/l/pyodhean.svg
-    :target: https://pyodhean.readthedocs.io/en/latest/license.html
+    :target: https://github.com/sigopti/pyodhean/blob/master/LICENSE
     :alt: License
 
 .. image:: https://dev.azure.com/sigopti/pyomo/_apis/build/status/sigopti.pyodhean?branchName=master
