@@ -29,7 +29,7 @@ stages:
           coverage: false
           pre_test:
               - script: |
-                  sudo apt install make g++ gfortran pkgconf liblapack-dev
+                  sudo apt-get install make g++ gfortran pkgconf liblapack-dev
                   git clone --depth=1 https://github.com/coin-or/coinbrew
                   cd coinbrew
                   sudo ./coinbrew fetch build Ipopt@3.13.0 --prefix=/usr/local
