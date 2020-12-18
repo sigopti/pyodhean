@@ -1,2 +1,2 @@
 pytest == 6.2.1
-pyomo == 5.7.1
+pyomo == 5.7.2
