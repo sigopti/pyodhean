@@ -37,7 +37,7 @@ setup(
     ],
     python_requires=">=3.6",
     install_requires=[
-        "Pyomo>=5.7,<7",
+        "Pyomo>=6,<7",
     ],
     packages=find_packages(exclude=["tests*"]),
 )
