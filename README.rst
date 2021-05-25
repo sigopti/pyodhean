@@ -27,4 +27,4 @@ Install
 
     pip install pyodhean
 
-pyodhean supports Python >= 3.6.
+pyodhean supports Python >= 3.7.
